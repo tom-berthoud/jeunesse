@@ -24,8 +24,12 @@ Makefile, tests SQL, sauvegarde GitHub Actions).
   `added_by` / `created_by` valent `auth.uid()` par défaut et la RLS refuse une
   autre valeur : ne pas les passer depuis le code.
 - Création de séance : `on conflict (date, categorie_id) do nothing`, jamais de doublon.
-- Le compteur ne se calcule qu'à un endroit : la fonction SQL `compteur()`. Pas de
-  recalcul en TypeScript.
+- Le classement ne se calcule qu'à un endroit : la fonction SQL `compteur()`.
+  La fiche membre regroupe seulement les lignes qu'elle affiche.
+- Types de la base : `lib/types/database.ts`, écrits à la main au format
+  `supabase gen types`. À mettre à jour à chaque migration.
+- Dates : chaînes `YYYY-MM-DD` et `lib/dates.ts` (fuseau Europe/Zurich). Pas de
+  `new Date()` local en logique métier : Vercel tourne en UTC.
 - On ne supprime ni membre ni catégorie : `membres.archive` / `categories.archivee`.
   `membres.statut` (actif / passif) est le statut dans la société, sans rapport
   avec l'archivage.
@@ -38,9 +42,10 @@ Makefile, tests SQL, sauvegarde GitHub Actions).
 
 ## Auth
 
-- Chaque page et chaque Server Action rappelle `requireComite()` ou `requireAdmin()` ;
-  `proxy.ts` ne fait qu'un contrôle optimiste.
-- `SUPABASE_SERVICE_ROLE_KEY` : uniquement dans les actions d'admin des comptes.
+- Chaque page et chaque Server Action rappelle `requireComite()` ou `requireAdmin()`
+  (`lib/auth.ts`) ; `proxy.ts` ne fait qu'un contrôle optimiste.
+- `createAdminClient()` (clé secrète, contourne la RLS) : uniquement dans
+  `app/(app)/reglages/comite/`, derrière `requireAdmin()`.
 
 ## Données personnelles
 

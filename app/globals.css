@@ -1,28 +1,63 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════
+   Thème — une seule couleur de marque, nuances dérivées en OKLCH
+   (même principe que genoudb : changer --brand reteint toute l'interface,
+   et la luminosité OKLCH est perceptuelle, contrairement à HSL).
+   ═══════════════════════════════════════════════════════════════════ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --brand: #1f2937;
+  --brand: #2b4c7e;
+
+  --brand-50:  oklch(from var(--brand) 0.975 calc(c * 0.12) h);
+  --brand-100: oklch(from var(--brand) 0.945 calc(c * 0.25) h);
+  --brand-200: oklch(from var(--brand) 0.89  calc(c * 0.45) h);
+  --brand-600: oklch(from var(--brand) calc(l * 0.9) c h);
+  --brand-700: oklch(from var(--brand) calc(l * 0.78) c h);
+
+  --ink:       #172033;
+  --ink-muted: #5b6577;
+  --ink-faint: #8b93a3;
+  --surface:   #ffffff;
+  --surface-2: #f4f6f9;
+  --line:      #e1e5ec;
+  --danger:    #c0392b;
+
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --color-brand: var(--brand);
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-danger: var(--danger);
   /* Piles système : pas de next/font/google, le build ne dépend pas du réseau. */
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--surface-2);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.875rem;
+}
+
+.focus-brand:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
