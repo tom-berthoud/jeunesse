@@ -21,8 +21,12 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
     email: parsed.data.email,
     password: parsed.data.password,
   });
-  // Message volontairement vague : ne pas révéler si l'adresse existe.
-  if (error) return { error: "E-mail ou mot de passe incorrect." };
+  if (error) {
+    // Cause réelle dans les logs serveur uniquement (mauvais mdp, URL Supabase
+    // erronée, réseau…) ; l'utilisateur ne doit pas savoir si l'adresse existe.
+    console.error("login:", error.code ?? error.name, error.status, error.message);
+    return { error: "E-mail ou mot de passe incorrect." };
+  }
 
   // Chemin interne uniquement : « //site.ch » serait une redirection externe.
   const suite = parsed.data.suite;
