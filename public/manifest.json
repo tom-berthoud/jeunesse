@@ -1,0 +1,12 @@
+{
+  "name": "JCSD — Présences",
+  "short_name": "JCSD",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#1f2937",
+  "lang": "fr-CH",
+  "icons": []
+}
