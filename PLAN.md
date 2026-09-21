@@ -180,8 +180,8 @@ doit être en base.
 | 0 | Préparation | ✓ Projet Supabase créé, dépôt Git, Next initialisé, déployé sur Vercel |
 | 1 | Schéma + RLS | ✓ `0001_init.sql`, `seed.sql` (Char, Costume, 16 membres fictifs), `npm run test:db` |
 | 2 | Auth + comptes | ✓ Connexion, mdp provisoire changé à la 1ʳᵉ connexion, admin crée / désactive un compte |
-| 3 | Membres | ✓ Liste, ajout, désactivation, import CSV `prenom;nom` |
-| 4 | Séances + saisie | ✓ Créer une séance et cocher 30 personnes sur téléphone en < 1 min |
+| 3 | Membres | ✓ Liste, ajout, archivage, ajout en liste `Prénom ; Nom ; passif` |
+| 4 | Séances + saisie | ✓ code. À valider sur téléphone : créer une séance et cocher 30 personnes en < 1 min |
 | 5 | Calendrier + compteur + historique | ✓ Chiffres de `compteur()` vérifiés sur un petit jeu de données compté à la main |
 | 6 | Prod | PWA installable, sauvegarde + réveil GitHub Actions, comptes du comité créés |
 
