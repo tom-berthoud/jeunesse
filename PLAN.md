@@ -57,13 +57,14 @@ Schéma de référence : `supabase/migrations/0001_init.sql` (ci-dessous, versio
 abrégée).
 
 ```sql
-create type role as enum ('admin', 'comite');
+create type statut_membre as enum ('actif', 'passif');
+create type role_comite as enum ('admin', 'comite');
 
 -- Comité = utilisateurs de l'app
 create table profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   nom text not null,
-  role role not null default 'comite',
+  role role_comite not null default 'comite',
   actif boolean not null default true,
   doit_changer_mdp boolean not null default true
 );
@@ -97,7 +98,7 @@ create table seances (
 create table presences (
   seance_id uuid references seances (id) on delete cascade,
   membre_id uuid references membres (id) on delete restrict,
-  added_by uuid not null references profiles (id),   -- posé par la Server Action
+  added_by uuid not null default auth.uid() references profiles (id),  -- RLS : = auth.uid()
   added_at timestamptz not null default now(),
   primary key (seance_id, membre_id)
 );
@@ -152,7 +153,7 @@ aurait sinon 1 au lieu de 0. `security invoker` : la fonction respecte la RLS.
 - `is_comite()` / `is_admin()` en `security definer`, `set search_path = ''`,
   `execute` révoqué à `anon` (comme `edelparc/supabase/migrations/0003_security_hardening.sql`).
 - Départ du comité : `profiles.actif = false` + bannissement du compte via l'API admin.
-- `SUPABASE_SERVICE_ROLE_KEY` : uniquement dans les actions d'admin des comptes.
+- `SUPABASE_SECRET_KEY` : uniquement dans les actions d'admin des comptes.
 - **LPD** : prénom et nom seulement (membres possiblement mineurs).
 
 ## 6. Écrans (mobile d'abord)
@@ -176,7 +177,7 @@ doit être en base.
 
 | # | Phase | Terminé quand |
 |---|---|---|
-| 0 | Préparation | Projet Supabase créé, dépôt Git, Next initialisé, déployé sur Vercel |
+| 0 | Préparation | ✓ Projet Supabase créé, dépôt Git, Next initialisé, déployé sur Vercel |
 | 1 | Schéma + RLS | ✓ `0001_init.sql`, `seed.sql` (Char, Costume, 16 membres fictifs), `npm run test:db` |
 | 2 | Auth + comptes | Connexion, mdp provisoire changé à la 1ʳᵉ connexion, admin crée / désactive un compte |
 | 3 | Membres | Liste, ajout, désactivation, import CSV `prenom;nom` |
