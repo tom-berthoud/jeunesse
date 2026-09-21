@@ -20,12 +20,20 @@ Makefile, tests SQL, sauvegarde GitHub Actions).
   jamais d'édition d'une migration déjà appliquée en production.
 - RLS activée sur **toutes** les tables. Les vues : `with (security_invoker = true)`.
 - Fonctions `security definer` : `set search_path = ''` et `revoke execute … from anon`.
-- `presences` : présent = une ligne, absent = pas de ligne. `added_by` est posé
-  explicitement par la Server Action.
+- `presences` : présent = une ligne, absent = pas de ligne, jamais d'UPDATE.
+  `added_by` / `created_by` valent `auth.uid()` par défaut et la RLS refuse une
+  autre valeur : ne pas les passer depuis le code.
 - Création de séance : `on conflict (date, categorie_id) do nothing`, jamais de doublon.
 - Le compteur ne se calcule qu'à un endroit : la fonction SQL `compteur()`. Pas de
   recalcul en TypeScript.
-- On ne supprime ni membre ni catégorie : `actif = false` / `archivee = true`.
+- On ne supprime ni membre ni catégorie : `membres.archive` / `categories.archivee`.
+  `membres.statut` (actif / passif) est le statut dans la société, sans rapport
+  avec l'archivage.
+- Comptes du comité : jamais supprimés, `profiles.actif = false`. Rôle et
+  activation ne se modifient qu'avec la clé secrète (colonnes non accordées à
+  `authenticated`).
+- Tests SQL : `npm run test:db` (Podman, Postgres jetable, stub de `auth` dans
+  `supabase/tests/_stub_auth.sql`). Toute nouvelle règle RLS = un test.
 - Régénérer `lib/types/database.ts` après chaque migration.
 
 ## Auth
@@ -45,4 +53,5 @@ explicite (pas de date de naissance, téléphone).
 npm run typecheck
 npm run lint
 npm run build
+npm run test:db   # si supabase/ a changé
 ```

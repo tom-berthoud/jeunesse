@@ -53,6 +53,9 @@ chaque année, et la RLS peut s'appuyer sur `auth.uid()`.
 
 ## 4. Modèle de données
 
+Schéma de référence : `supabase/migrations/0001_init.sql` (ci-dessous, version
+abrégée).
+
 ```sql
 create type role as enum ('admin', 'comite');
 
@@ -70,7 +73,8 @@ create table membres (
   id uuid primary key default gen_random_uuid(),
   prenom text not null,
   nom text not null,
-  actif boolean not null default true          -- parti : masqué de la saisie, historique conservé
+  statut statut_membre not null default 'actif',  -- membre actif / passif de la société
+  archive boolean not null default false          -- parti : masqué de la saisie, historique conservé
 );
 
 create table categories (
@@ -111,8 +115,8 @@ create table presences (
   il faudra lever cette contrainte.
 - **Saisie à plusieurs** : chaque case cochée est une ligne indépendante, donc
   pas de conflit entre deux téléphones. Pas de bouton « Enregistrer ».
-- **Rien n'est supprimé en cascade vers les personnes** : un membre parti passe
-  `actif = false`, ses présences restent dans l'historique.
+- **Actif / passif** est le statut du membre dans la société. Un membre parti
+  passe `archive = true` : il disparaît de la saisie, ses présences restent.
 - **Catégorie archivée** plutôt que supprimée, pour la même raison.
 
 ### Compteur
@@ -140,9 +144,11 @@ aurait sinon 1 au lieu de 0. `security invoker` : la fonction respecte la RLS.
 
 ## 5. Sécurité
 
-- RLS sur toutes les tables. Comité actif : lecture et écriture de `membres`,
-  `seances`, `presences`. Admin : `categories` (archivage), `profiles`,
-  suppression de séances.
+- RLS sur toutes les tables. Comité actif : lecture partout ; ajout et
+  modification de `membres`, `categories`, `seances` ; cocher / décocher dans
+  `presences`. Suppression d'une séance : son auteur ou un admin. Suppression
+  de membres et catégories : admin. Comptes (`profiles.role`, `actif`) : clé
+  secrète côté serveur uniquement.
 - `is_comite()` / `is_admin()` en `security definer`, `set search_path = ''`,
   `execute` révoqué à `anon` (comme `edelparc/supabase/migrations/0003_security_hardening.sql`).
 - Départ du comité : `profiles.actif = false` + bannissement du compte via l'API admin.
@@ -171,7 +177,7 @@ doit être en base.
 | # | Phase | Terminé quand |
 |---|---|---|
 | 0 | Préparation | Projet Supabase créé, dépôt Git, Next initialisé, déployé sur Vercel |
-| 1 | Schéma + RLS | Migrations, seed (catégories de départ) ; test SQL : `anon` ne lit rien, `comite` ne gère pas les comptes |
+| 1 | Schéma + RLS | ✓ `0001_init.sql`, `seed.sql` (Char, Costume, 16 membres fictifs), `npm run test:db` |
 | 2 | Auth + comptes | Connexion, mdp provisoire changé à la 1ʳᵉ connexion, admin crée / désactive un compte |
 | 3 | Membres | Liste, ajout, désactivation, import CSV `prenom;nom` |
 | 4 | Séances + saisie | Créer une séance et cocher 30 personnes sur téléphone en < 1 min |
@@ -187,7 +193,6 @@ doit être en base.
 
 ## 9. À confirmer
 
-- [ ] Liste des catégories de départ.
 - [ ] Période par défaut du compteur : année civile ou année de jeunesse
       (p. ex. septembre → août) ?
 - [ ] Deux séances de la même catégorie le même jour, possible ? (sinon on garde
