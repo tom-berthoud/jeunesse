@@ -12,18 +12,11 @@ export default async function Categories() {
     .order("libelle");
 
   return (
-    <div className="space-y-4">
-      <PageHeader back="/reglages" title="Catégories" subtitle="Une catégorie archivée n'est plus proposée pour les nouvelles séances." />
-      <div className="space-y-2">
-        {categories?.map((c) => (
-          <CategorieForm
-            key={c.id}
-            categorie={c}
-            nbSeances={c.seances[0]?.count ?? 0}
-            admin={profile.role === "admin"}
-          />
-        ))}
-      </div>
+    <div className="space-y-3">
+      <PageHeader back="/reglages" title="Catégories" />
+      {categories?.map((c) => (
+        <CategorieForm key={c.id} categorie={c} nbSeances={c.seances[0]?.count ?? 0} admin={profile.role === "admin"} />
+      ))}
       <NouvelleCategorie />
     </div>
   );

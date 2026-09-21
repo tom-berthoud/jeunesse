@@ -9,6 +9,12 @@ import type { StatutMembre } from "@/lib/types/database";
 type Membre = { id: string; prenom: string; nom: string; statut: StatutMembre; archive: boolean };
 type Filtre = "tous" | "presents" | "absents";
 
+const FILTRES = [
+  ["tous", "Tous"],
+  ["presents", "Présents"],
+  ["absents", "Absents"],
+] as const;
+
 /** Recherche insensible à la casse et aux accents (« zoe » trouve « Zoé »). */
 const normaliser = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
@@ -46,37 +52,35 @@ export function Saisie({ seanceId, membres, presents }: { seanceId: string; memb
 
   return (
     <div className="space-y-3">
-      <div className="sticky top-0 z-10 -mx-4 space-y-2 bg-surface-2/95 px-4 pt-1 pb-2 backdrop-blur">
-        <div className="flex items-baseline justify-between">
-          <p className="text-2xl font-semibold tabular-nums">
-            {set.size} <span className="text-base font-normal text-ink-muted">présent{set.size > 1 ? "s" : ""}</span>
-          </p>
-          <p className="text-sm text-ink-faint">sur {membres.length}</p>
+      <div className="sticky top-0 z-10 -mx-4 space-y-2 bg-page/95 px-4 pt-2 pb-2 backdrop-blur">
+        <div className="flex items-center gap-2">
+          <label className="relative flex-1">
+            <Search size={18} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink-faint" />
+            <input
+              type="search"
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+              placeholder="Rechercher"
+              aria-label="Rechercher"
+              className="min-h-11 w-full rounded-lg border border-line bg-surface pr-3 pl-10 text-base text-ink placeholder:text-ink-faint focus-brand"
+            />
+          </label>
+          <span
+            aria-label={`${set.size} présents sur ${membres.length}`}
+            className="grid min-h-11 min-w-16 place-items-center rounded-lg bg-accent px-3 text-lg font-semibold tabular-nums text-on-accent"
+          >
+            {set.size}
+          </span>
         </div>
-        <label className="relative block">
-          <Search size={18} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink-faint" />
-          <input
-            type="search"
-            value={recherche}
-            onChange={(e) => setRecherche(e.target.value)}
-            placeholder="Rechercher"
-            className="min-h-11 w-full rounded-lg border border-line bg-surface pr-3 pl-10 text-base focus-brand"
-          />
-        </label>
-        <div className="flex gap-1.5">
-          {(
-            [
-              ["tous", "Tous"],
-              ["presents", "Présents"],
-              ["absents", "Absents"],
-            ] as const
-          ).map(([v, l]) => (
+        <div className="grid grid-cols-3 gap-1 rounded-xl bg-surface-2 p-1">
+          {FILTRES.map(([v, l]) => (
             <button
               key={v}
               onClick={() => setFiltre(v)}
+              aria-pressed={filtre === v}
               className={cn(
-                "min-h-9 rounded-full px-3.5 text-sm font-medium",
-                filtre === v ? "bg-brand text-white" : "bg-surface text-ink-muted ring-1 ring-line",
+                "min-h-9 rounded-lg text-sm font-medium transition-colors",
+                filtre === v ? "bg-surface text-ink shadow-sm" : "text-ink-muted",
               )}
             >
               {l}
@@ -85,7 +89,7 @@ export function Saisie({ seanceId, membres, presents }: { seanceId: string; memb
         </div>
       </div>
 
-      {erreur && <Alert tone="danger">{erreur}</Alert>}
+      {erreur && <Alert>{erreur}</Alert>}
 
       <ul className="card divide-y divide-line overflow-hidden">
         {visibles.map((m) => {
@@ -97,27 +101,26 @@ export function Saisie({ seanceId, membres, presents }: { seanceId: string; memb
                 aria-pressed={on}
                 className={cn(
                   "flex min-h-14 w-full items-center gap-3 px-4 text-left transition-colors",
-                  on ? "bg-brand-50" : "active:bg-surface-2",
+                  on ? "bg-accent-soft" : "active:bg-surface-2",
                 )}
               >
                 <span
                   className={cn(
                     "grid size-7 shrink-0 place-items-center rounded-full border-2 transition-colors",
-                    on ? "border-brand bg-brand text-white" : "border-line",
+                    on ? "border-accent bg-accent text-on-accent" : "border-line",
                   )}
                 >
                   {on && <Check size={16} strokeWidth={3} />}
                 </span>
-                <span className={cn("flex-1 text-base", on && "font-medium")}>
+                <span className={cn("flex-1 text-base", on && "font-medium", m.archive && "text-ink-muted")}>
                   {m.prenom} {m.nom}
                 </span>
                 <StatutBadge statut={m.statut} />
-                {m.archive && <span className="text-[11px] text-ink-faint">archivé</span>}
               </button>
             </li>
           );
         })}
-        {!visibles.length && <li className="px-4 py-8 text-center text-sm text-ink-muted">Personne.</li>}
+        {!visibles.length && <li className="px-4 py-8 text-center text-sm text-ink-faint">—</li>}
       </ul>
     </div>
   );

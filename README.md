@@ -44,6 +44,11 @@ production : ce que tu saisis en local est réel.
 | `/reglages/categories` | Renommer, recolorer, archiver |
 | `/reglages/comite` | Admin : créer, désactiver, réinitialiser les comptes |
 
+## Apparence
+
+Noir et jaune, les couleurs de la Jeunesse. Mode clair, sombre ou système
+(Réglages → Apparence). Jetons de couleur dans `app/globals.css`.
+
 ## Comptes
 
 Pas d'e-mail : un admin crée le compte dans `/reglages/comite` avec un mot de

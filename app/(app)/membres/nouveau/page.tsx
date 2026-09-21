@@ -7,7 +7,7 @@ export default async function NouveauMembre() {
   await requireComite();
   return (
     <div className="space-y-6">
-      <PageHeader back="/membres" title="Ajouter des membres" />
+      <PageHeader back="/membres" title="Ajouter" />
       <MembreForm />
       <AjoutListe />
     </div>

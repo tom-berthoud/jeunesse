@@ -2,7 +2,7 @@ import Link from "next/link";
 import { UserPlus } from "lucide-react";
 import { requireComite } from "@/lib/auth";
 import { aujourdhui } from "@/lib/dates";
-import { cn, Empty, LinkButton, PageHeader, Select, StatutBadge } from "@/components/ui";
+import { cn, IconLink, PageHeader, Select, StatutBadge } from "@/components/ui";
 import { Filtres } from "./filtres";
 
 type Params = { annee?: string; categorie?: string; statut?: string; archives?: string };
@@ -42,11 +42,10 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
     <div className="space-y-4">
       <PageHeader
         title="Membres"
-        subtitle={`${lignes.length} personne${lignes.length > 1 ? "s" : ""}`}
         actions={
-          <LinkButton href="/membres/nouveau" variant="outline" aria-label="Ajouter des membres">
-            <UserPlus size={18} /> Ajouter
-          </LinkButton>
+          <IconLink href="/membres/nouveau" aria-label="Ajouter des membres">
+            <UserPlus size={22} />
+          </IconLink>
         }
       />
 
@@ -68,9 +67,9 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
           <option value="actif">Actifs</option>
           <option value="passif">Passifs</option>
         </Select>
-        <label className="col-span-3 flex items-center gap-2 text-sm text-ink-muted">
-          <input type="checkbox" name="archives" value="1" defaultChecked={archives} className="size-4 accent-brand" />
-          Inclure les anciens membres
+        <label className="col-span-3 flex min-h-9 items-center gap-2 px-1 text-sm text-ink-muted">
+          <input type="checkbox" name="archives" value="1" defaultChecked={archives} className="size-4 accent-primary" />
+          Anciens membres
         </label>
       </Filtres>
 
@@ -81,11 +80,11 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
               <Link href={`/membres/${m.membre_id}`} className="flex min-h-13 items-center gap-3 px-4 py-2 hover:bg-surface-2">
                 <span
                   className={cn(
-                    "w-7 shrink-0 text-right text-sm tabular-nums",
-                    rangs[i] <= 3 && m.presences > 0 ? "font-semibold text-brand" : "text-ink-faint",
+                    "grid size-7 shrink-0 place-items-center rounded-full text-xs font-semibold tabular-nums",
+                    rangs[i] <= 3 && m.presences > 0 ? "bg-accent text-on-accent" : "text-ink-faint",
                   )}
                 >
-                  {rangs[i]}.
+                  {rangs[i]}
                 </span>
                 <span className={cn("min-w-0 flex-1 truncate", m.archive && "text-ink-faint")}>
                   {m.prenom} {m.nom}
@@ -96,9 +95,7 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
             </li>
           ))}
         </ol>
-      ) : (
-        <Empty>Aucun membre pour ces filtres.</Empty>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -17,7 +17,7 @@ export function SupprimerMembre({ id }: { id: string }) {
       className="space-y-2"
     >
       <input type="hidden" name="id" value={id} />
-      {etat.erreur && <Alert tone="danger">{etat.erreur}</Alert>}
+      {etat.erreur && <Alert>{etat.erreur}</Alert>}
       <Button variant="danger" disabled={pending} className="w-full">
         Supprimer ce membre
       </Button>

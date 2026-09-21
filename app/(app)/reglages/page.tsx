@@ -1,23 +1,30 @@
 import Link from "next/link";
 import { ChevronRight, LogOut, Tags, UserCog } from "lucide-react";
 import { requireComite } from "@/lib/auth";
-import { PageHeader } from "@/components/ui";
+import { lireTheme } from "@/lib/theme";
+import { PageHeader, Section } from "@/components/ui";
 import { PasswordForm } from "@/components/password-form";
 import { NomForm } from "./nom-form";
+import { ThemeChoix } from "./theme-choix";
 
 export default async function Reglages() {
   const { profile, email } = await requireComite();
+  const theme = await lireTheme();
 
   const liens = [
     { href: "/reglages/categories", label: "Catégories", icon: Tags },
-    ...(profile.role === "admin" ? [{ href: "/reglages/comite", label: "Comptes du comité", icon: UserCog }] : []),
+    ...(profile.role === "admin" ? [{ href: "/reglages/comite", label: "Comité", icon: UserCog }] : []),
   ];
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Réglages" subtitle={`${email}${profile.role === "admin" ? " · admin" : ""}`} />
+      <PageHeader title="Réglages" />
 
-      <ul className="card divide-y divide-line">
+      <Section title="Apparence">
+        <ThemeChoix theme={theme} />
+      </Section>
+
+      <ul className="card divide-y divide-line overflow-hidden">
         {liens.map(({ href, label, icon: Icon }) => (
           <li key={href}>
             <Link href={href} className="flex min-h-13 items-center gap-3 px-4 py-2 hover:bg-surface-2">
@@ -29,20 +36,21 @@ export default async function Reglages() {
         ))}
       </ul>
 
-      <section className="space-y-2">
-        <h2 className="text-sm font-medium text-ink-muted">Mon nom</h2>
-        <NomForm nom={profile.nom} />
-      </section>
+      <Section title="Compte">
+        <div className="card space-y-4 p-4">
+          <p className="truncate text-sm text-ink-muted">{email}</p>
+          <NomForm nom={profile.nom} />
+        </div>
+      </Section>
 
-      <section className="space-y-2">
-        <h2 className="text-sm font-medium text-ink-muted">Mot de passe</h2>
+      <Section title="Mot de passe">
         <div className="card p-4">
           <PasswordForm />
         </div>
-      </section>
+      </Section>
 
       <form action="/logout" method="post">
-        <button className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-medium text-danger hover:bg-red-50">
+        <button className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-medium text-danger hover:bg-danger/10">
           <LogOut size={18} /> Se déconnecter
         </button>
       </form>

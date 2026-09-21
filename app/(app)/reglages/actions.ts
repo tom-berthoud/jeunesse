@@ -1,9 +1,11 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireComite } from "@/lib/auth";
 import { messageErreur, type EtatAction } from "@/lib/action";
+import { THEME_COOKIE, type Theme } from "@/lib/theme";
 
 const motDePasse = z
   .object({
@@ -39,4 +41,11 @@ export async function changerNom(_prev: EtatAction, formData: FormData): Promise
   if (error) return { erreur: messageErreur(error) };
   revalidatePath("/", "layout");
   return { ok: "Nom enregistré." };
+}
+
+export async function changerTheme(theme: Theme) {
+  const store = await cookies();
+  if (theme === "system") store.delete(THEME_COOKIE);
+  else store.set(THEME_COOKIE, theme, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  revalidatePath("/", "layout");
 }

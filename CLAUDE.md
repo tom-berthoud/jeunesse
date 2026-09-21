@@ -47,6 +47,21 @@ Makefile, tests SQL, sauvegarde GitHub Actions).
 - `createAdminClient()` (clé secrète, contourne la RLS) : uniquement dans
   `app/(app)/reglages/comite/`, derrière `requireAdmin()`.
 
+## Interface
+
+- Épurée : pas de sous-titre, de phrase d'aide ou de texte décoratif. Un
+  libellé n'existe que s'il est nécessaire pour comprendre ou agir. Pas d'emoji.
+- Icônes : `lucide-react` uniquement.
+- Couleurs : jetons de `app/globals.css` (`page`, `surface`, `ink`, `primary`,
+  `accent`…), jamais de couleur Tailwind brute (`red-500`, `zinc-…`). Chaque
+  jeton a sa valeur claire et sombre.
+- Noir et jaune (Jeunesse de Châtel-St-Denis). Le jaune ne porte jamais de
+  texte sur fond clair (contraste ≈ 1.6:1) : il sert de surface avec du texte
+  noir (`bg-accent text-on-accent`).
+- Thème : cookie `theme` (`light` / `dark`, absent = système), lu par
+  `app/layout.tsx` → `data-theme` sur `<html>`.
+- Majuscule des dates dans `lib/dates.ts`, pas avec CSS `capitalize`.
+
 ## Données personnelles
 
 Membres potentiellement mineurs : prénom et nom. Rien d'autre sans décision

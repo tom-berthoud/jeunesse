@@ -93,12 +93,15 @@ const fmtMois = new Intl.DateTimeFormat("fr-CH", {
   year: "numeric",
 });
 
-/** « samedi 3 octobre 2026 » */
-export const dateLongue = (date: string) => fmtLong.format(versDate(date));
-/** « sam. 3 oct. » */
-export const dateCourte = (date: string) => fmtCourt.format(versDate(date));
-/** « octobre 2026 » */
-export const nomMois = (m: Mois) => fmtMois.format(new Date(Date.UTC(m.annee, m.mois - 1, 1)));
+/** Majuscule initiale seulement : CSS `capitalize` donnerait « 3 Octobre ». */
+const initiale = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** « Samedi 3 octobre 2026 » */
+export const dateLongue = (date: string) => initiale(fmtLong.format(versDate(date)));
+/** « Sam. 3 oct. » */
+export const dateCourte = (date: string) => initiale(fmtCourt.format(versDate(date)));
+/** « Octobre 2026 » */
+export const nomMois = (m: Mois) => initiale(fmtMois.format(new Date(Date.UTC(m.annee, m.mois - 1, 1))));
 export const jourDuMois = (date: string) => Number(date.slice(8));
 
 export function decalerJour(date: string, delta: number): string {

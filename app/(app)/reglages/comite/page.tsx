@@ -16,12 +16,8 @@ export default async function Comite() {
   const parId = new Map(users.users.map((u) => [u.id, u]));
 
   return (
-    <div className="space-y-4">
-      <PageHeader
-        back="/reglages"
-        title="Comptes du comité"
-        subtitle="Pas d'e-mail envoyé : transmets toi-même l'adresse et le mot de passe provisoire."
-      />
+    <div className="space-y-3">
+      <PageHeader back="/reglages" title="Comité" />
       <div className="space-y-2">
         {profiles?.map((p) => (
           <CompteCard

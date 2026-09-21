@@ -14,6 +14,6 @@ export function texteSur(fond: string): "#000000" | "#ffffff" {
 
 /** Proposées à la création d'une catégorie. */
 export const PALETTE = [
-  "#b45309", "#7c3aed", "#0f766e", "#be123c",
-  "#1d4ed8", "#4d7c0f", "#c2410c", "#475569",
+  "#f5c400", "#e0701f", "#c62828", "#b45309",
+  "#7c3aed", "#1d6fd8", "#0f8a6a", "#71717a",
 ];

@@ -1,51 +1,97 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════════
-   Thème — une seule couleur de marque, nuances dérivées en OKLCH
-   (même principe que genoudb : changer --brand reteint toute l'interface,
-   et la luminosité OKLCH est perceptuelle, contrairement à HSL).
+   Thème — noir et jaune, couleurs de la Jeunesse de Châtel-St-Denis
+   (t-shirts noirs, écusson jaune à l'aigle noir).
+
+   Le jaune ne porte jamais de texte fin sur fond clair : contraste
+   insuffisant (≈ 1.6:1 sur blanc). En clair, il sert de surface (jour
+   courant, cases cochées, bouton +) avec du texte noir dessus ; les
+   boutons principaux sont noirs. En sombre, les boutons passent au jaune.
+
+   Mode : `data-theme` sur <html>, posé par le layout depuis le cookie
+   `theme`. Sans cookie, on suit le système (prefers-color-scheme).
    ═══════════════════════════════════════════════════════════════════ */
 
 :root {
-  --brand: #2b4c7e;
+  --jaune: #f5c400;
 
-  --brand-50:  oklch(from var(--brand) 0.975 calc(c * 0.12) h);
-  --brand-100: oklch(from var(--brand) 0.945 calc(c * 0.25) h);
-  --brand-200: oklch(from var(--brand) 0.89  calc(c * 0.45) h);
-  --brand-600: oklch(from var(--brand) calc(l * 0.9) c h);
-  --brand-700: oklch(from var(--brand) calc(l * 0.78) c h);
+  --page:       #f6f6f4;
+  --surface:    #ffffff;
+  --surface-2:  #efefec;
+  --line:       #e3e3df;
+  --ink:        #111111;
+  --ink-muted:  #5f5f5a;
+  --ink-faint:  #93938d;
 
-  --ink:       #172033;
-  --ink-muted: #5b6577;
-  --ink-faint: #8b93a3;
-  --surface:   #ffffff;
-  --surface-2: #f4f6f9;
-  --line:      #e1e5ec;
-  --danger:    #c0392b;
+  --primary:    #111111;
+  --on-primary: #ffffff;
+  --accent:     var(--jaune);
+  --on-accent:  #111111;
+  --accent-soft: #fff6cc;
+
+  --danger:  #c62828;
+  --success: #2e7d32;
 
   color-scheme: light;
 }
 
+/* Sombre : dupliqué pour « système » et pour le choix explicite. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page:       #0b0b0b;
+    --surface:    #161616;
+    --surface-2:  #1f1f1f;
+    --line:       #2a2a2a;
+    --ink:        #f2f2f0;
+    --ink-muted:  #a3a39e;
+    --ink-faint:  #6e6e69;
+    --primary:    var(--jaune);
+    --on-primary: #111111;
+    --accent-soft: #2b2610;
+    --danger:  #ef5350;
+    --success: #66bb6a;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --page:       #0b0b0b;
+  --surface:    #161616;
+  --surface-2:  #1f1f1f;
+  --line:       #2a2a2a;
+  --ink:        #f2f2f0;
+  --ink-muted:  #a3a39e;
+  --ink-faint:  #6e6e69;
+  --primary:    var(--jaune);
+  --on-primary: #111111;
+  --accent-soft: #2b2610;
+  --danger:  #ef5350;
+  --success: #66bb6a;
+  color-scheme: dark;
+}
+
 @theme inline {
-  --color-brand: var(--brand);
-  --color-brand-50: var(--brand-50);
-  --color-brand-100: var(--brand-100);
-  --color-brand-200: var(--brand-200);
-  --color-brand-600: var(--brand-600);
-  --color-brand-700: var(--brand-700);
-  --color-ink: var(--ink);
-  --color-ink-muted: var(--ink-muted);
-  --color-ink-faint: var(--ink-faint);
+  --color-page: var(--page);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-accent-soft: var(--accent-soft);
   --color-danger: var(--danger);
+  --color-success: var(--success);
   /* Piles système : pas de next/font/google, le build ne dépend pas du réseau. */
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 body {
-  background: var(--surface-2);
+  background: var(--page);
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
@@ -58,6 +104,14 @@ body {
 }
 
 .focus-brand:focus-visible {
-  outline: 2px solid var(--brand);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
+}
+
+/* Marqueur des <details> : on garde nos propres chevrons. */
+summary {
+  list-style: none;
+}
+summary::-webkit-details-marker {
+  display: none;
 }

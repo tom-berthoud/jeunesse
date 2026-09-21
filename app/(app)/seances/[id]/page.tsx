@@ -30,14 +30,12 @@ export default async function Seance({ params }: PageProps<"/seances/[id]">) {
     <div className="space-y-4">
       <PageHeader
         back={`/jour/${seance.date}`}
-        title={
-          <span className="flex items-center gap-2">
-            <Pill color={seance.categorie?.couleur ?? "#6b7280"} className="text-sm">
-              {seance.categorie?.libelle}
-            </Pill>
-          </span>
+        title={dateLongue(seance.date)}
+        actions={
+          <Pill color={seance.categorie?.couleur ?? "#6b7280"} className="text-sm">
+            {seance.categorie?.libelle}
+          </Pill>
         }
-        subtitle={<span className="capitalize">{dateLongue(seance.date)}</span>}
       />
 
       <Saisie seanceId={seance.id} membres={liste} presents={presents} />

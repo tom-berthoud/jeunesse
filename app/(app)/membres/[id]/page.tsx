@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireComite } from "@/lib/auth";
 import { dateCourte } from "@/lib/dates";
-import { PageHeader, Pill, StatutBadge } from "@/components/ui";
+import { PageHeader, Pill, Section, StatutBadge } from "@/components/ui";
 import { MembreForm } from "../membre-form";
 import { SupprimerMembre } from "./supprimer";
 
@@ -45,14 +45,13 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
       <PageHeader
         back="/membres"
         title={`${membre.prenom} ${membre.nom}`}
-        subtitle={
-          <span className="flex items-center gap-2">
-            {historique.length} présence{historique.length > 1 ? "s" : ""} au total
-            <StatutBadge statut={membre.statut} />
-            {membre.archive && <span className="text-xs">· ancien membre</span>}
-          </span>
-        }
+        actions={<StatutBadge statut={membre.statut} />}
       />
+
+      <div className="card flex items-center justify-between px-4 py-3">
+        <span className="text-3xl font-semibold tabular-nums">{historique.length}</span>
+        <span className="text-sm text-ink-muted">présence{historique.length > 1 ? "s" : ""}</span>
+      </div>
 
       {totaux.size > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -64,36 +63,33 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
         </div>
       )}
 
-      <section className="space-y-2">
-        <h2 className="text-sm font-medium text-ink-muted">Historique</h2>
-        {historique.length ? (
-          [...parAnnee.entries()].map(([annee, seances]) => (
+      {historique.length > 0 && (
+        <Section title="Historique">
+          {[...parAnnee.entries()].map(([annee, seances]) => (
             <div key={annee} className="space-y-1.5">
-              <p className="px-1 text-xs font-semibold text-ink-faint">
-                {annee} · {seances.length}
+              <p className="flex justify-between px-1 text-xs font-medium text-ink-faint">
+                <span>{annee}</span>
+                <span className="tabular-nums">{seances.length}</span>
               </p>
               <ul className="card divide-y divide-line">
                 {seances.map((s) => (
                   <li key={s.id}>
                     <Link href={`/seances/${s.id}`} className="flex min-h-11 items-center gap-3 px-4 py-2 hover:bg-surface-2">
-                      <span className="w-24 shrink-0 text-sm capitalize text-ink-muted">{dateCourte(s.date)}</span>
+                      <span className="w-24 shrink-0 text-sm text-ink-muted">{dateCourte(s.date)}</span>
                       <Pill color={s.categorie?.couleur ?? "#6b7280"}>{s.categorie?.libelle}</Pill>
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
-          ))
-        ) : (
-          <p className="card px-4 py-6 text-center text-sm text-ink-muted">Aucune présence pour l&apos;instant.</p>
-        )}
-      </section>
+          ))}
+        </Section>
+      )}
 
-      <section className="space-y-2">
-        <h2 className="text-sm font-medium text-ink-muted">Modifier</h2>
+      <Section title="Modifier">
         <MembreForm membre={membre} />
         {profile.role === "admin" && historique.length === 0 && <SupprimerMembre id={membre.id} />}
-      </section>
+      </Section>
     </div>
   );
 }
