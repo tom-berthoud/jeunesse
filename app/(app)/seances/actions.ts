@@ -5,20 +5,33 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireComite } from "@/lib/auth";
 import { estDate } from "@/lib/dates";
+import { estPoids, POIDS_DEFAUT } from "@/lib/poids";
 import { messageErreur, type EtatAction } from "@/lib/action";
 
 const uuid = z.uuid();
 const date = z.string().refine(estDate, "Date invalide.");
+
+/** Poids soumis par un formulaire ; toute valeur inattendue retombe sur 1. */
+function lirePoids(formData: FormData): number {
+  const v = formData.get("poids");
+  return Number(estPoids(v) ? v : POIDS_DEFAUT);
+}
 
 /**
  * Ouvre la séance (date, catégorie), en la créant si besoin. `on conflict do
  * nothing` + relecture : deux membres du comité qui l'ouvrent en même temps
  * tombent sur la même séance.
  */
-async function ouvrir(supabase: Awaited<ReturnType<typeof requireComite>>["supabase"], d: string, categorieId: string) {
+async function ouvrir(
+  supabase: Awaited<ReturnType<typeof requireComite>>["supabase"],
+  d: string,
+  categorieId: string,
+  poids: number,
+) {
+  // ignoreDuplicates : si la séance existe déjà, son poids n'est pas écrasé.
   const { error } = await supabase
     .from("seances")
-    .upsert({ date: d, categorie_id: categorieId }, { onConflict: "date,categorie_id", ignoreDuplicates: true });
+    .upsert({ date: d, categorie_id: categorieId, poids }, { onConflict: "date,categorie_id", ignoreDuplicates: true });
   if (error) return { erreur: messageErreur(error) };
 
   const { data, error: e2 } = await supabase
@@ -37,7 +50,7 @@ export async function ouvrirSeance(_prev: EtatAction, formData: FormData): Promi
   const c = uuid.safeParse(formData.get("categorie_id"));
   if (!d.success || !c.success) return { erreur: "Données invalides." };
 
-  const r = await ouvrir(supabase, d.data, c.data);
+  const r = await ouvrir(supabase, d.data, c.data, lirePoids(formData));
   if ("erreur" in r) return { erreur: r.erreur };
   revalidatePath("/", "layout");
   redirect(`/seances/${r.id}`);
@@ -63,7 +76,7 @@ export async function creerCategorieEtSeance(_prev: EtatAction, formData: FormDa
     return { erreur: messageErreur(error) };
   }
 
-  const r = await ouvrir(supabase, d.data, cat.id);
+  const r = await ouvrir(supabase, d.data, cat.id, lirePoids(formData));
   if ("erreur" in r) return { erreur: r.erreur };
   revalidatePath("/", "layout");
   redirect(`/seances/${r.id}`);
@@ -92,16 +105,20 @@ export async function basculerPresence(
   return {};
 }
 
-export async function enregistrerRemarque(_prev: EtatAction, formData: FormData): Promise<EtatAction> {
+export async function enregistrerOptions(_prev: EtatAction, formData: FormData): Promise<EtatAction> {
   const { supabase } = await requireComite();
   const id = uuid.safeParse(formData.get("id"));
   if (!id.success) return { erreur: "Données invalides." };
   const remarque = String(formData.get("remarque") ?? "").trim() || null;
 
-  const { error } = await supabase.from("seances").update({ remarque }).eq("id", id.data);
+  const { error } = await supabase
+    .from("seances")
+    .update({ remarque, poids: lirePoids(formData) })
+    .eq("id", id.data);
   if (error) return { erreur: messageErreur(error) };
-  revalidatePath(`/seances/${id.data}`);
-  return { ok: "Remarque enregistrée." };
+  // Le poids change le classement : revalider aussi /membres.
+  revalidatePath("/", "layout");
+  return { ok: "Enregistré." };
 }
 
 export async function supprimerSeance(_prev: EtatAction, formData: FormData): Promise<EtatAction> {

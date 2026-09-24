@@ -1,0 +1,110 @@
+# Sauvegarde hebdomadaire de la base Supabase, et réveil du projet.
+#
+# Deux besoins distincts, d'où deux cadences :
+#
+#   • La SAUVEGARDE, le lundi. Le plan Free de Supabase n'en fournit
+#     aucune : ce dump est la seule copie qui existe.
+#
+#   • Le RÉVEIL, mercredi et samedi. Un projet Free se met en pause après
+#     7 jours sans activité, et la jeunesse ne saisit rien entre deux
+#     périodes de travail : hors saison du char, personne n'ouvre l'app
+#     pendant des semaines. Le plus grand écart ici est samedi → lundi,
+#     soit 2 jours.
+#
+# RESTAURATION — à tester une fois, sinon ce fichier ne prouve rien :
+#   age -d -i ~/.config/jcsd-backup.key -o j.dump jcsd-AAAA-MM-JJ.dump.age
+#   createdb jcsd_test
+#   pg_restore -d jcsd_test --no-owner --no-privileges j.dump
+#
+# CONFIGURATION (une fois) :
+#   • secret SUPABASE_DB_URL : Supabase → Project Settings → Database →
+#     Connection string (session pooler), mot de passe compris.
+#   • variable AGE_PUBLIC_KEY : `age-keygen -o ~/.config/jcsd-backup.key`
+#     puis copier la ligne « public key ». La clé privée reste sur le
+#     ThinkPad et n'est pas dans ce dépôt.
+
+name: Sauvegarde
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"    # lundi 03:00 UTC — sauvegarde
+    - cron: "0 3 * * 3,6"  # mercredi et samedi — réveil seul
+  workflow_dispatch:       # et le bouton « Run workflow »
+
+# Le pooler Supabase n'accorde qu'une poignée de connexions : deux
+# exécutions simultanées se marcheraient dessus.
+concurrency:
+  group: sauvegarde
+  cancel-in-progress: false
+
+jobs:
+  sauvegarde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # pg_dump doit être au moins aussi récent que le serveur. Le client
+      # livré avec le runner est plus ancien que le Postgres 17 de
+      # Supabase et refuserait le dump — d'où l'image officielle.
+      PG_IMAGE: postgres:17-alpine
+
+    steps:
+      - name: Horodater
+        run: echo "STAMP=$(date -u +%Y-%m-%d)" >> "$GITHUB_ENV"
+
+      - name: Réveiller la base
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          [ -n "${DATABASE_URL:-}" ] || {
+            echo "::error::Le secret SUPABASE_DB_URL est absent."; exit 1; }
+          docker run --rm -e DATABASE_URL "$PG_IMAGE" \
+            sh -c 'psql "$DATABASE_URL" -tAc "select 1"'
+          echo "Base jointe — le projet ne peut pas se mettre en pause."
+
+      - name: Sauvegarder
+        if: github.event.schedule == '0 3 * * 1' || github.event_name == 'workflow_dispatch'
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p dump
+          # --schema=public : les schémas internes de Supabase (auth,
+          # storage) ne se restaurent pas et n'appartiennent pas à l'app.
+          # --no-owner/--no-privileges : pour pouvoir restaurer ailleurs.
+          docker run --rm -e DATABASE_URL -v "$PWD/dump:/dump" "$PG_IMAGE" \
+            sh -c 'pg_dump "$DATABASE_URL" \
+                     --schema=public --no-owner --no-privileges \
+                     --format=custom --file=/dump/jcsd.dump'
+          # Un dump vide part sans bruit : autant échouer tout de suite.
+          test -s dump/jcsd.dump
+          echo "Dump : $(du -h dump/jcsd.dump | cut -f1)"
+
+      - name: Chiffrer
+        if: github.event.schedule == '0 3 * * 1' || github.event_name == 'workflow_dispatch'
+        env:
+          AGE_PUBLIC_KEY: ${{ vars.AGE_PUBLIC_KEY }}
+        run: |
+          set -euo pipefail
+          # Ce dump contient les prénoms et noms de personnes de la
+          # jeunesse, dont des mineurs. Il ne monte pas chez GitHub en
+          # clair, même sur un dépôt privé.
+          [ -n "${AGE_PUBLIC_KEY:-}" ] || {
+            echo "::error::La variable AGE_PUBLIC_KEY est absente."; exit 1; }
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq age
+          age -r "$AGE_PUBLIC_KEY" \
+              -o "dump/jcsd-${STAMP}.dump.age" dump/jcsd.dump
+          rm -f dump/jcsd.dump
+
+      - name: Déposer l'archive
+        if: github.event.schedule == '0 3 * * 1' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jcsd-${{ env.STAMP }}
+          path: dump/*.age
+          # Plafond de GitHub. Une fois par an, après la saison, télécharge-en
+          # un et garde-le ailleurs : sinon rien ne remonte au-delà.
+          retention-days: 90
+          if-no-files-found: error

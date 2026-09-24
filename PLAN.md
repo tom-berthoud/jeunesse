@@ -90,6 +90,7 @@ create table seances (
   date date not null,
   categorie_id uuid not null references categories (id),
   remarque text,
+  poids numeric(3,1) not null default 1,       -- 0.5 demi-journée, 1, 2 journée complète
   created_by uuid references profiles (id),
   created_at timestamptz not null default now(),
   unique (date, categorie_id)                  -- un seul « Char » le même jour
@@ -116,6 +117,10 @@ create table presences (
   il faudra lever cette contrainte.
 - **Saisie à plusieurs** : chaque case cochée est une ligne indépendante, donc
   pas de conflit entre deux téléphones. Pas de bouton « Enregistrer ».
+- **Poids de la séance** (`0001` + `0002_poids_seance.sql`) : une séance vaut
+  0.5, 1 ou 2 présences. Porté par la séance et non par la présence : tout le
+  monde y fait la même journée. Le jour où il faudra distinguer personne par
+  personne, la colonne se déplacera sur `presences` sans toucher au reste.
 - **Actif / passif** est le statut du membre dans la société. Un membre parti
   passe `archive = true` : il disparaît de la saisie, ses présences restent.
 - **Catégorie archivée** plutôt que supprimée, pour la même raison.
@@ -127,21 +132,21 @@ plutôt qu'une vue parce qu'elle prend des filtres :
 
 ```sql
 create function compteur(p_debut date, p_fin date, p_categorie uuid default null)
-returns table (membre_id uuid, prenom text, nom text, presences bigint)
+returns table (membre_id uuid, prenom text, nom text, presences numeric)
 language sql stable security invoker as $$
-  select m.id, m.prenom, m.nom, count(s.id)
+  select m.id, m.prenom, m.nom, coalesce(sum(s.poids), 0)
   from membres m
   left join presences p on p.membre_id = m.id
   left join seances s   on s.id = p.seance_id
                        and s.date between p_debut and p_fin
                        and (p_categorie is null or s.categorie_id = p_categorie)
   group by m.id
-  order by count(s.id) desc, m.nom, m.prenom;
+  order by coalesce(sum(s.poids), 0) desc, m.nom, m.prenom;
 $$;
 ```
 
-`count(s.id)` et pas `count(*)` : avec les `left join`, un membre sans présence
-aurait sinon 1 au lieu de 0. `security invoker` : la fonction respecte la RLS.
+`coalesce` : avec les `left join`, `sum()` vaut `null` — et non 0 — pour un
+membre sans présence. `security invoker` : la fonction respecte la RLS.
 
 ## 5. Sécurité
 
@@ -163,8 +168,8 @@ Barre de navigation en bas, 3 entrées + admin.
 | Route | Rôle |
 |---|---|
 | `/` | **Calendrier** du mois : chaque jour affiche des pastilles colorées par catégorie. Tap sur une pastille → la séance. Bouton « + » : nouvelle séance (date, aujourd'hui par défaut + catégorie) |
-| `/seances/[id]` | **Saisie** : liste alphabétique des membres actifs, recherche, case à cocher par personne, compteur « 14 présents » |
-| `/membres` | Compteur par personne, filtres catégorie + période (par défaut : année en cours). Ajout d'une personne |
+| `/seances/[id]` | **Saisie** : liste alphabétique des membres actifs, recherche, case à cocher par personne, compteur « 14 présents ». Poids de la séance dans les options |
+| `/membres` | Compteur par personne, filtres catégorie + période — année civile, tout, ou deux dates libres (par défaut : année en cours). Ajout d'une personne |
 | `/membres/[id]` | Historique de la personne : liste des séances, total par catégorie |
 | `/admin` | Comptes du comité, catégories (admin seul) |
 | `/login`, `/compte` | Connexion, changement de mot de passe |
@@ -185,6 +190,11 @@ doit être en base.
 | 5 | Calendrier + compteur + historique | ✓ Chiffres de `compteur()` vérifiés sur un petit jeu de données compté à la main |
 | 6 | Prod | PWA installable, sauvegarde + réveil GitHub Actions, comptes du comité créés |
 
+Phase 6 : `.github/workflows/sauvegarde.yml` écrit (dump chiffré `age` le lundi,
+réveil mercredi et samedi) — reste à poser le secret `SUPABASE_DB_URL`, la
+variable `AGE_PUBLIC_KEY`, et à tester une restauration. Icônes PWA en attente
+du logo.
+
 ## 8. Plus tard, si demandé
 
 - Export CSV du compteur.
@@ -195,7 +205,10 @@ doit être en base.
 ## 9. À confirmer
 
 - [ ] Période par défaut du compteur : année civile ou année de jeunesse
-      (p. ex. septembre → août) ?
+      (p. ex. septembre → août) ? Moins pressant depuis que `/membres` accepte
+      deux dates libres, mais le défaut reste l'année civile.
+- [ ] Barème des poids : 0.5 / 1 / 2 proposés. La base accepte tout multiple
+      de 0,5 jusqu'à 5 (`lib/poids.ts` si le comité en veut d'autres).
 - [ ] Deux séances de la même catégorie le même jour, possible ? (sinon on garde
       la contrainte d'unicité)
 - [ ] Le compteur est-il montré aux membres de la jeunesse ?

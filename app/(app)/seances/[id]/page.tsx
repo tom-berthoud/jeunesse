@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireComite } from "@/lib/auth";
 import { dateLongue } from "@/lib/dates";
-import { PageHeader, Pill } from "@/components/ui";
+import { PageHeader, Pill, PoidsBadge } from "@/components/ui";
 import { Saisie } from "./saisie";
 import { OptionsSeance } from "./options-seance";
 
@@ -12,7 +12,7 @@ export default async function Seance({ params }: PageProps<"/seances/[id]">) {
   const [{ data: seance }, { data: membres }, { data: presences }] = await Promise.all([
     supabase
       .from("seances")
-      .select("id, date, remarque, created_by, categorie:categories(libelle, couleur), auteur:profiles(nom)")
+      .select("id, date, remarque, poids, created_by, categorie:categories(libelle, couleur), auteur:profiles(nom)")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("membres").select("id, prenom, nom, statut, archive").order("prenom").order("nom"),
@@ -32,9 +32,12 @@ export default async function Seance({ params }: PageProps<"/seances/[id]">) {
         back={`/jour/${seance.date}`}
         title={dateLongue(seance.date)}
         actions={
-          <Pill color={seance.categorie?.couleur ?? "#6b7280"} className="text-sm">
-            {seance.categorie?.libelle}
-          </Pill>
+          <>
+            <PoidsBadge poids={seance.poids} />
+            <Pill color={seance.categorie?.couleur ?? "#6b7280"} className="text-sm">
+              {seance.categorie?.libelle}
+            </Pill>
+          </>
         }
       />
 
@@ -43,6 +46,7 @@ export default async function Seance({ params }: PageProps<"/seances/[id]">) {
       <OptionsSeance
         id={seance.id}
         remarque={seance.remarque}
+        poids={seance.poids}
         auteur={seance.auteur?.nom ?? null}
         peutSupprimer={profile.role === "admin" || seance.created_by === userId}
       />

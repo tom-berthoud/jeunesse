@@ -84,6 +84,41 @@ begin
           (select id from public.categories where libelle = 'Costume')) where prenom = 'Léa') = 0,
     'filtre de catégorie';
 
+  -- Poids : journée complète = 2, demi-journée = 0.5
+  update public.seances set poids = 2 where id = v_s1;
+  update public.seances set poids = 0.5 where id = v_s2;
+  assert (select presences from public.compteur('2026-01-01', '2026-12-31') where prenom = 'Léa') = 2.5,
+    'Léa = 2 + 0.5';
+  assert (select presences from public.compteur('2026-01-01', '2026-12-31') where prenom = 'Lucas') = 2,
+    'Lucas = 2';
+  assert (select presences from public.compteur('2026-01-01', '2026-12-31') where prenom = 'Emma') = 0,
+    'sans présence = 0 même avec des poids';
+
+  -- Poids hors barème
+  begin
+    update public.seances set poids = 0 where id = v_s1;
+    raise exception 'ÉCHEC : poids nul accepté';
+  exception when check_violation then null;
+  end;
+  begin
+    update public.seances set poids = 1.25 where id = v_s1;
+    raise exception 'ÉCHEC : poids hors demi accepté';
+  exception when check_violation then null;
+  end;
+
+  -- Seuls la remarque et le poids sont modifiables
+  update public.seances set remarque = 'Pluie' where id = v_s1;
+  begin
+    update public.seances set date = '2026-10-04' where id = v_s1;
+    raise exception 'ÉCHEC : date d''une séance modifiable';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    update public.seances set created_by = '00000000-0000-0000-0000-00000000000a' where id = v_s1;
+    raise exception 'ÉCHEC : created_by modifiable';
+  exception when insufficient_privilege then null;
+  end;
+
   -- Le comité crée une catégorie mais ne supprime pas
   insert into public.categories (libelle) values ('Soirée');
   delete from public.categories where libelle = 'Soirée';

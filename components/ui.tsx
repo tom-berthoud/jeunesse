@@ -149,21 +149,37 @@ export function Alert({ tone = "danger", children }: { tone?: "danger" | "succes
   return <div className={cn("rounded-lg border px-3.5 py-2.5 text-sm", tones[tone])}>{children}</div>;
 }
 
+/** Poids d'une séance. Rien à montrer quand elle compte pour une présence. */
+export function PoidsBadge({ poids }: { poids: number }) {
+  return poids === 1 ? null : (
+    <span className="shrink-0 rounded bg-surface-2 px-1.5 py-0.5 text-[11px] font-medium text-ink-muted tabular-nums">
+      ×{poids}
+    </span>
+  );
+}
+
 export function StatutBadge({ statut }: { statut: "actif" | "passif" }) {
   return statut === "passif" ? (
     <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[11px] font-medium text-ink-muted">passif</span>
   ) : null;
 }
 
-/** Choix exclusif en boutons (radios natifs, donc utilisable dans un <form>). */
+/**
+ * Choix exclusif en boutons (radios natifs, donc utilisable dans un <form>).
+ * Contrôlé si `valeur` est fourni, sinon simple `defaultChecked`.
+ */
 export function Segments<T extends string>({
   name,
   options,
   defaut,
+  valeur,
+  onChange,
 }: {
   name: string;
   options: readonly { valeur: T; label: string }[];
-  defaut: T;
+  defaut?: T;
+  valeur?: T;
+  onChange?: (v: T) => void;
 }) {
   return (
     <div className="grid auto-cols-fr grid-flow-col gap-1 rounded-xl bg-surface-2 p-1">
@@ -172,7 +188,15 @@ export function Segments<T extends string>({
           key={o.valeur}
           className="flex min-h-10 cursor-pointer items-center justify-center rounded-lg text-sm font-medium text-ink-muted has-[:checked]:bg-surface has-[:checked]:text-ink has-[:checked]:shadow-sm"
         >
-          <input type="radio" name={name} value={o.valeur} defaultChecked={o.valeur === defaut} className="sr-only" />
+          <input
+            type="radio"
+            name={name}
+            value={o.valeur}
+            checked={valeur === undefined ? undefined : valeur === o.valeur}
+            defaultChecked={valeur === undefined ? o.valeur === defaut : undefined}
+            onChange={valeur === undefined ? undefined : () => onChange?.(o.valeur)}
+            className="sr-only"
+          />
           {o.label}
         </label>
       ))}

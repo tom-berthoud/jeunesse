@@ -1,18 +1,32 @@
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
 import { requireComite } from "@/lib/auth";
-import { aujourdhui } from "@/lib/dates";
-import { cn, IconLink, PageHeader, Select, StatutBadge } from "@/components/ui";
+import { aujourdhui, estDate } from "@/lib/dates";
+import { cn, IconLink, Input, PageHeader, Select, StatutBadge } from "@/components/ui";
 import { Filtres } from "./filtres";
 
-type Params = { annee?: string; categorie?: string; statut?: string; archives?: string };
+type Params = { annee?: string; debut?: string; fin?: string; categorie?: string; statut?: string; archives?: string };
 
 export default async function Membres({ searchParams }: PageProps<"/membres">) {
   const { supabase } = await requireComite();
   const sp = (await searchParams) as Params;
 
   const anneeCourante = Number(aujourdhui().slice(0, 4));
-  const annee = sp.annee === "tout" ? "tout" : /^\d{4}$/.test(sp.annee ?? "") ? Number(sp.annee) : anneeCourante;
+
+  // Période : une année civile, tout, ou deux dates libres. Les bornes
+  // personnalisées restent dans l'URL même quand une année est choisie, pour
+  // les retrouver en revenant sur « Dates ».
+  const mode =
+    sp.annee === "tout" || sp.annee === "perso" ? sp.annee
+    : /^\d{4}$/.test(sp.annee ?? "") ? sp.annee!
+    : String(anneeCourante);
+  const debut = estDate(sp.debut) ? sp.debut : `${anneeCourante}-01-01`;
+  const fin = estDate(sp.fin) ? sp.fin : aujourdhui();
+  const periode =
+    mode === "tout" ? { debut: "1900-01-01", fin: "2999-12-31" }
+    : mode === "perso" ? (debut <= fin ? { debut, fin } : { debut: fin, fin: debut })
+    : { debut: `${mode}-01-01`, fin: `${mode}-12-31` };
+
   const statut = sp.statut === "actif" || sp.statut === "passif" ? sp.statut : "";
   const archives = sp.archives === "1";
 
@@ -23,8 +37,8 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
   const categorie = categories?.some((c) => c.id === sp.categorie) ? sp.categorie! : "";
 
   const { data: compteur, error } = await supabase.rpc("compteur", {
-    p_debut: annee === "tout" ? "1900-01-01" : `${annee}-01-01`,
-    p_fin: annee === "tout" ? "2999-12-31" : `${annee}-12-31`,
+    p_debut: periode.debut,
+    p_fin: periode.fin,
     p_categorie: categorie || null,
   });
   if (error) throw new Error(error.message);
@@ -50,11 +64,12 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
       />
 
       <Filtres>
-        <Select name="annee" defaultValue={String(annee)} aria-label="Période">
+        <Select name="annee" defaultValue={mode} aria-label="Période">
           {annees.map((a) => (
             <option key={a} value={a}>{a}</option>
           ))}
           <option value="tout">Tout</option>
+          <option value="perso">Dates</option>
         </Select>
         <Select name="categorie" defaultValue={categorie} aria-label="Catégorie">
           <option value="">Toutes</option>
@@ -67,6 +82,12 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
           <option value="actif">Actifs</option>
           <option value="passif">Passifs</option>
         </Select>
+        {mode === "perso" && (
+          <div className="col-span-3 flex items-center gap-2">
+            <Input type="date" name="debut" defaultValue={debut} aria-label="Début de la période" />
+            <Input type="date" name="fin" defaultValue={fin} aria-label="Fin de la période" />
+          </div>
+        )}
         <label className="col-span-3 flex min-h-9 items-center gap-2 px-1 text-sm text-ink-muted">
           <input type="checkbox" name="archives" value="1" defaultChecked={archives} className="size-4 accent-primary" />
           Anciens membres
@@ -90,7 +111,7 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
                   {m.prenom} {m.nom}
                 </span>
                 <StatutBadge statut={m.statut} />
-                <span className="w-10 shrink-0 text-right text-lg font-semibold tabular-nums">{m.presences}</span>
+                <span className="w-12 shrink-0 text-right text-lg font-semibold tabular-nums">{m.presences}</span>
               </Link>
             </li>
           ))}

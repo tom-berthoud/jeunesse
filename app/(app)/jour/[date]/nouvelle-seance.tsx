@@ -5,7 +5,8 @@ import { Plus } from "lucide-react";
 import { creerCategorieEtSeance, ouvrirSeance } from "@/app/(app)/seances/actions";
 import { ETAT_INITIAL } from "@/lib/action";
 import { PALETTE, texteSur } from "@/lib/couleurs";
-import { Alert, Button, Input } from "@/components/ui";
+import { OPTIONS_POIDS, POIDS_DEFAUT, type Poids } from "@/lib/poids";
+import { Alert, Button, Input, Segments } from "@/components/ui";
 import { ChoixCouleur } from "@/components/choix-couleur";
 
 type Categorie = { id: string; libelle: string; couleur: string };
@@ -15,12 +16,20 @@ export function NouvelleSeance({ date, categories }: { date: string; categories:
   const [etatCat, creer, creation] = useActionState(creerCategorieEtSeance, ETAT_INITIAL);
   const [nouvelle, setNouvelle] = useState(categories.length === 0);
   const [couleur, setCouleur] = useState(PALETTE[0]);
+  // Choisi avant d'ouvrir la séance : taper une catégorie la crée aussitôt.
+  const [poids, setPoids] = useState<Poids>(POIDS_DEFAUT);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      <div className="space-y-1.5">
+        <p className="px-1 text-xs font-medium text-ink-muted">Compte pour</p>
+        <Segments name="poids" options={OPTIONS_POIDS} valeur={poids} onChange={setPoids} />
+      </div>
+
       {categories.length > 0 && (
         <form action={ouvrir} className="grid grid-cols-2 gap-2">
           <input type="hidden" name="date" value={date} />
+          <input type="hidden" name="poids" value={poids} />
           {categories.map((c) => (
             <button
               key={c.id}
@@ -42,6 +51,7 @@ export function NouvelleSeance({ date, categories }: { date: string; categories:
         <form action={creer} className="card space-y-3 p-4">
           <input type="hidden" name="date" value={date} />
           <input type="hidden" name="couleur" value={couleur} />
+          <input type="hidden" name="poids" value={poids} />
           <Input name="libelle" placeholder="Nouvelle catégorie" required autoFocus={categories.length > 0} maxLength={40} />
           <ChoixCouleur valeur={couleur} onChange={setCouleur} />
           {etatCat.erreur && <Alert>{etatCat.erreur}</Alert>}

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { requireComite } from "@/lib/auth";
 import { dateLongue, decalerJour, estDate, formatMoisParam, moisDe } from "@/lib/dates";
-import { IconLink, PageHeader, Pill } from "@/components/ui";
+import { IconLink, PageHeader, Pill, PoidsBadge } from "@/components/ui";
 import { NouvelleSeance } from "./nouvelle-seance";
 
 export default async function Jour({ params }: PageProps<"/jour/[date]">) {
@@ -14,7 +14,7 @@ export default async function Jour({ params }: PageProps<"/jour/[date]">) {
   const [{ data: seances }, { data: categories }] = await Promise.all([
     supabase
       .from("seances")
-      .select("id, categorie_id, remarque, categorie:categories(libelle, couleur), presences(count)")
+      .select("id, categorie_id, remarque, poids, categorie:categories(libelle, couleur), presences(count)")
       .eq("date", date),
     supabase.from("categories").select("id, libelle, couleur").eq("archivee", false).order("ordre").order("libelle"),
   ]);
@@ -46,7 +46,10 @@ export default async function Jour({ params }: PageProps<"/jour/[date]">) {
               <Link href={`/seances/${s.id}`} className="flex min-h-14 items-center gap-3 px-4 py-2 hover:bg-surface-2">
                 <Pill color={s.categorie?.couleur ?? "#6b7280"}>{s.categorie?.libelle}</Pill>
                 {s.remarque && <span className="truncate text-sm text-ink-muted">{s.remarque}</span>}
-                <span className="ml-auto shrink-0 text-sm font-medium tabular-nums">{s.presences[0]?.count ?? 0}</span>
+                <span className="ml-auto flex shrink-0 items-center gap-2">
+                  <PoidsBadge poids={s.poids} />
+                  <span className="text-sm font-medium tabular-nums">{s.presences[0]?.count ?? 0}</span>
+                </span>
                 <ChevronRight size={18} className="shrink-0 text-ink-faint" />
               </Link>
             </li>

@@ -14,7 +14,7 @@ import {
   parseMois,
   premierJour,
 } from "@/lib/dates";
-import { cn, IconLink, Pill } from "@/components/ui";
+import { cn, IconLink, Pill, PoidsBadge } from "@/components/ui";
 
 const JOURS = ["L", "M", "M", "J", "V", "S", "D"];
 
@@ -26,7 +26,7 @@ export default async function Calendrier({ searchParams }: PageProps<"/">) {
 
   const { data: seances } = await supabase
     .from("seances")
-    .select("id, date, categorie:categories(libelle, couleur), presences(count)")
+    .select("id, date, poids, categorie:categories(libelle, couleur), presences(count)")
     .gte("date", premierJour(mois))
     .lte("date", dernierJour(mois))
     .order("date");
@@ -100,7 +100,10 @@ export default async function Calendrier({ searchParams }: PageProps<"/">) {
                 <Link href={`/seances/${s.id}`} className="flex min-h-13 items-center gap-3 px-4 py-2 hover:bg-surface-2">
                   <span className="w-24 shrink-0 text-sm text-ink-muted">{dateCourte(s.date)}</span>
                   <Pill color={s.categorie?.couleur ?? "#6b7280"}>{s.categorie?.libelle}</Pill>
-                  <span className="ml-auto text-sm font-medium tabular-nums">{n}</span>
+                  <span className="ml-auto flex items-center gap-2">
+                    <PoidsBadge poids={s.poids} />
+                    <span className="text-sm font-medium tabular-nums">{n}</span>
+                  </span>
                 </Link>
               </li>
             );

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireComite } from "@/lib/auth";
 import { dateCourte } from "@/lib/dates";
-import { PageHeader, Pill, Section, StatutBadge } from "@/components/ui";
+import { PageHeader, Pill, PoidsBadge, Section, StatutBadge } from "@/components/ui";
 import { MembreForm } from "../membre-form";
 import { SupprimerMembre } from "./supprimer";
 
@@ -14,7 +14,7 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
     supabase.from("membres").select("id, prenom, nom, statut, archive").eq("id", id).maybeSingle(),
     supabase
       .from("presences")
-      .select("seance:seances(id, date, categorie:categories(id, libelle, couleur))")
+      .select("seance:seances(id, date, poids, categorie:categories(id, libelle, couleur))")
       .eq("membre_id", id),
   ]);
   if (!membre) notFound();
@@ -24,12 +24,16 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
     .filter((s) => s !== null)
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  // Totaux par catégorie : simple regroupement des lignes affichées dessous.
+  // Une séance compte pour son poids (journée complète, demi-journée…), comme
+  // dans compteur(). Totaux par catégorie : regroupement des lignes affichées
+  // dessous, rien de recalculé ailleurs.
+  const total = historique.reduce((n, s) => n + s.poids, 0);
+
   const totaux = new Map<string, { libelle: string; couleur: string; n: number }>();
   for (const s of historique) {
     if (!s.categorie) continue;
     const t = totaux.get(s.categorie.id) ?? { libelle: s.categorie.libelle, couleur: s.categorie.couleur, n: 0 };
-    t.n++;
+    t.n += s.poids;
     totaux.set(s.categorie.id, t);
   }
 
@@ -49,8 +53,8 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
       />
 
       <div className="card flex items-center justify-between px-4 py-3">
-        <span className="text-3xl font-semibold tabular-nums">{historique.length}</span>
-        <span className="text-sm text-ink-muted">présence{historique.length > 1 ? "s" : ""}</span>
+        <span className="text-3xl font-semibold tabular-nums">{total}</span>
+        <span className="text-sm text-ink-muted">présence{total > 1 ? "s" : ""}</span>
       </div>
 
       {totaux.size > 0 && (
@@ -69,7 +73,7 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
             <div key={annee} className="space-y-1.5">
               <p className="flex justify-between px-1 text-xs font-medium text-ink-faint">
                 <span>{annee}</span>
-                <span className="tabular-nums">{seances.length}</span>
+                <span className="tabular-nums">{seances.reduce((n, s) => n + s.poids, 0)}</span>
               </p>
               <ul className="card divide-y divide-line">
                 {seances.map((s) => (
@@ -77,6 +81,7 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
                     <Link href={`/seances/${s.id}`} className="flex min-h-11 items-center gap-3 px-4 py-2 hover:bg-surface-2">
                       <span className="w-24 shrink-0 text-sm text-ink-muted">{dateCourte(s.date)}</span>
                       <Pill color={s.categorie?.couleur ?? "#6b7280"}>{s.categorie?.libelle}</Pill>
+                      <PoidsBadge poids={s.poids} />
                     </Link>
                   </li>
                 ))}

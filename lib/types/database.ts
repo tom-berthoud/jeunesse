@@ -85,6 +85,7 @@ export type Database = {
           date: string;
           categorie_id: string;
           remarque: string | null;
+          poids: number;
           created_by: string | null;
           created_at: string;
         };
@@ -93,8 +94,10 @@ export type Database = {
           date: string;
           categorie_id: string;
           remarque?: string | null;
+          poids?: number;
         };
-        Update: { date?: string; categorie_id?: string; remarque?: string | null };
+        // `authenticated` n'a le droit d'écrire que la remarque et le poids.
+        Update: { remarque?: string | null; poids?: number };
         Relationships: [
           FK<"seances_categorie_id_fkey", "categorie_id", "categories">,
           FK<"seances_created_by_fkey", "created_by", "profiles">,
@@ -126,6 +129,7 @@ export type Database = {
           nom: string;
           statut: StatutMembre;
           archive: boolean;
+          // numeric : somme des poids des séances, donc 2.5 possible.
           presences: number;
         }[];
       };
