@@ -1,10 +1,10 @@
-/** Nom de l'app avec son repère jaune — en attendant le logo officiel. */
+import Image from "next/image";
+
+/** Logo de la jeunesse et nom de la société, en tête de la page de connexion. */
 export function Marque() {
   return (
     <div className="flex flex-col items-center gap-3">
-      <span className="grid size-14 place-items-center rounded-2xl bg-accent text-lg font-bold tracking-tight text-on-accent">
-        JCSD
-      </span>
+      <Image src="/icon-192.png" alt="" width={72} height={72} priority className="rounded-2xl" />
       <span className="text-sm font-medium text-ink-muted">Jeunesse de Châtel-St-Denis</span>
     </div>
   );

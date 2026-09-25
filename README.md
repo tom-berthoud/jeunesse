@@ -3,8 +3,8 @@
 PWA mobile pour le comité de la jeunesse : un jour + une catégorie (char,
 costume…), on coche les présents. Compteur par personne, calendrier, historique.
 
-**État : v1 fonctionnelle** (phases 0–5). Reste de la phase 6 : icônes PWA
-(logo à fournir) et la mise en place des secrets de sauvegarde. Voir
+**État : v1 fonctionnelle**, phases 0–6 codées. Restent la vraie liste des
+membres, les comptes du comité et l'essai sur téléphone. Voir
 [`PLAN.md`](PLAN.md).
 
 ## Démarrer
@@ -93,6 +93,21 @@ pg_restore -d jcsd_test --no-owner --no-privileges j.dump
 GitHub désactive les workflows planifiés d'un dépôt sans activité pendant
 60 jours (un e-mail prévient). Hors saison, vérifier que « Sauvegarde » tourne
 encore, sinon le réveil s'arrête aussi.
+
+## Icônes
+
+Le logo officiel (`design/logo.png`) n'est pas détouré : son fond est un blanc à
+demi opaque. `scripts/icones.py` l'aplatit, rend transparent le blanc qui touche
+les bords, garde le personnage seul — l'écusson ne fait que 74 x 90 px dans le
+fichier et devient illisible agrandi — et le pose sur le jaune de la société.
+
+```bash
+python3 scripts/icones.py   # demande python3-pillow et python3-scipy
+```
+
+Produit `app/icon.png`, `app/apple-icon.png` et les trois `public/icon-*.png` du
+manifeste, dont une version `maskable` au sujet réduit à 62 % pour le rognage
+d'Android. À relancer si le logo change.
 
 ## Comptes
 

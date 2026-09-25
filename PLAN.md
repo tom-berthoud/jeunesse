@@ -190,10 +190,12 @@ doit être en base.
 | 5 | Calendrier + compteur + historique | ✓ Chiffres de `compteur()` vérifiés sur un petit jeu de données compté à la main |
 | 6 | Prod | PWA installable, sauvegarde + réveil GitHub Actions, comptes du comité créés |
 
-Phase 6 : `.github/workflows/sauvegarde.yml` écrit (dump chiffré `age` le lundi,
-réveil mercredi et samedi) — reste à poser le secret `SUPABASE_DB_URL`, la
-variable `AGE_PUBLIC_KEY`, et à tester une restauration. Icônes PWA en attente
-du logo.
+Phase 6 : `.github/workflows/sauvegarde.yml` en service (dump chiffré `age` le
+lundi, réveil mercredi et samedi). Secret `SUPABASE_DB_URL` et variable
+`AGE_PUBLIC_KEY` posés ; **restauration vérifiée le 2026-09-24** sur Postgres
+jetable — seules erreurs, `create schema public` et la clé étrangère
+`profiles_id_fkey` vers `auth.users`, hors du dump `--schema=public`. Icônes
+PWA générées depuis le logo officiel (`design/logo.png` → `scripts/icones.py`).
 
 ## 8. Plus tard, si demandé
 
