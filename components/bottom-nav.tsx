@@ -17,7 +17,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navigation principale"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+      className="shrink-0 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]"
     >
       <div className="mx-auto grid max-w-2xl grid-cols-3">
         {items.map(({ href, label, icon: Icon, actif }) => {

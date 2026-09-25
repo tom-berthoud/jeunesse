@@ -38,7 +38,7 @@ export default async function Calendrier({ searchParams }: PageProps<"/">) {
   const lien = (delta: number) => `/?mois=${formatMoisParam(decalerMois(mois, delta))}`;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-16">
       <header className="flex min-h-11 items-center gap-1">
         <h1 className="flex-1 text-xl font-semibold tracking-tight">{nomMois(mois)}</h1>
         {!estMoisCourant && (

@@ -1,6 +1,7 @@
 import { requireComite } from "@/lib/auth";
 import { BottomNav } from "@/components/bottom-nav";
 import { PasswordForm } from "@/components/password-form";
+import { ResetDefilement } from "@/components/reset-defilement";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { profile } = await requireComite();
@@ -17,10 +18,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     );
   }
 
+  // Coquille d'application : c'est <main> qui défile, pas le document. Sinon
+  // la barre d'URL du navigateur mobile se rétracte au défilement, la hauteur
+  // du viewport change, et la barre de navigation — pourtant en bas — monte et
+  // redescend avec elle.
   return (
-    <>
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-28">{children}</main>
+    <div className="flex h-dvh flex-col overflow-hidden">
+      <ResetDefilement cible="contenu" />
+      <main
+        id="contenu"
+        className="mx-auto w-full max-w-2xl flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-6"
+      >
+        {children}
+      </main>
       <BottomNav />
-    </>
+    </div>
   );
 }
