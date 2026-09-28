@@ -1,6 +1,6 @@
 # Guide d'utilisation
 
-`guide-jcsd.pdf` : guide express pour le comité (4 pages, captures annotées),
+`guide-jcsd.pdf` : guide pour le comité (4 pages, captures annotées),
 généré depuis `guide.html`. `guide-complet.html` est la version détaillée
 (`node docs/guide/pdf.mjs guide-complet.html` → `guide-jcsd-complet.pdf`).
 À régénérer quand l'interface change.
