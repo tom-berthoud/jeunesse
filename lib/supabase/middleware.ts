@@ -28,11 +28,12 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Ne rien exécuter entre createServerClient et getUser() : c'est cet appel
-  // qui renouvelle le jeton et réécrit les cookies.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Ne rien exécuter entre createServerClient et getClaims() : c'est cet appel
+  // qui renouvelle le jeton et réécrit les cookies. getClaims() vérifie la
+  // signature localement (clés ES256 du projet), sans aller-retour vers le
+  // serveur Auth comme getUser().
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
 
   const { pathname } = request.nextUrl;
   const isLogin = pathname === "/login";

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useOptimistic, useState, useTransition } from "react";
+import { useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Check, Search } from "lucide-react";
 import { basculerPresence, choisirPoidsPresence } from "@/app/(app)/seances/actions";
 import { Alert, cn, StatutBadge } from "@/components/ui";
@@ -16,6 +17,13 @@ const FILTRES = [
   ["presents", "Présents"],
   ["absents", "Absents"],
 ] as const;
+
+// Une Server Action qui n'atteint pas le serveur lève une exception au lieu de
+// renvoyer { erreur } : non interceptée, elle remplacerait la liste par error.tsx.
+const HORS_LIGNE = "Pas de connexion : le dernier changement n'est pas enregistré.";
+
+/** Relecture de la séance pendant la saisie, pour voir les coches des autres téléphones. */
+const INTERVALLE_MS = 15_000;
 
 export function Saisie({
   seanceId,
@@ -51,6 +59,21 @@ export function Saisie({
   const [erreur, setErreur] = useState<string | null>(null);
   const [recherche, setRecherche] = useState("");
   const [filtre, setFiltre] = useState<Filtre>("tous");
+  const router = useRouter();
+
+  // Deux membres du comité peuvent pointer la même séance : sans relecture,
+  // chacun ne voit que ses coches et pourrait décocher celles de l'autre.
+  useEffect(() => {
+    const rafraichir = () => {
+      if (document.visibilityState === "visible") router.refresh();
+    };
+    const minuterie = setInterval(rafraichir, INTERVALLE_MS);
+    document.addEventListener("visibilitychange", rafraichir);
+    return () => {
+      clearInterval(minuterie);
+      document.removeEventListener("visibilitychange", rafraichir);
+    };
+  }, [router]);
 
   const set = useMemo(() => new Set(optimistes), [optimistes]);
 
@@ -71,8 +94,12 @@ export function Saisie({
       appliquer({ id, present });
       // Décocher supprime la ligne, donc aussi son poids.
       if (!present) appliquerPoids({ id, poids: null });
-      const r = await basculerPresence(seanceId, id, present);
-      if (r.erreur) setErreur(r.erreur);
+      try {
+        const r = await basculerPresence(seanceId, id, present);
+        if (r.erreur) setErreur(r.erreur);
+      } catch {
+        setErreur(HORS_LIGNE);
+      }
     });
   }
 
@@ -83,8 +110,12 @@ export function Saisie({
     setErreur(null);
     startTransition(async () => {
       appliquerPoids({ id, poids });
-      const r = await choisirPoidsPresence(seanceId, id, poids === null ? null : valeur);
-      if (r.erreur) setErreur(r.erreur);
+      try {
+        const r = await choisirPoidsPresence(seanceId, id, poids === null ? null : valeur);
+        if (r.erreur) setErreur(r.erreur);
+      } catch {
+        setErreur(HORS_LIGNE);
+      }
     });
   }
 

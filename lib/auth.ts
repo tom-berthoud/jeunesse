@@ -18,18 +18,20 @@ export type Session = {
  */
 export const getSession = cache(async (): Promise<Session | null> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  // Signature du jeton vérifiée localement. Un compte désactivé garde un jeton
+  // valide jusqu'à son expiration, mais la RLS lui cache alors son profil :
+  // `profile` vaut null et requireComite() le renvoie vers /desactive.
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims) return null;
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", claims.sub)
     .maybeSingle();
 
-  return { supabase, userId: user.id, email: user.email ?? "", profile };
+  return { supabase, userId: claims.sub, email: claims.email ?? "", profile };
 });
 
 /**
