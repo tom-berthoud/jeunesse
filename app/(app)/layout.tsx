@@ -21,9 +21,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Coquille d'application : c'est <main> qui défile, pas le document. Sinon
   // la barre d'URL du navigateur mobile se rétracte au défilement, la hauteur
   // du viewport change, et la barre de navigation — pourtant en bas — monte et
-  // redescend avec elle.
+  // redescend avec elle. Hauteur de la coquille : voir `.coquille` dans globals.css.
   return (
-    <div className="flex h-dvh flex-col overflow-hidden">
+    <div className="coquille flex flex-col overflow-hidden">
       <ResetDefilement cible="contenu" />
       <main
         id="contenu"

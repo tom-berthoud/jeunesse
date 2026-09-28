@@ -111,10 +111,11 @@ export default async function Calendrier({ searchParams }: PageProps<"/">) {
         </ul>
       )}
 
+      {/* absolute : calé sur la coquille (fixed), hors du défilement de <main>. */}
       <Link
         href={`/jour/${today}`}
         aria-label="Nouvelle séance"
-        className="fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-20 grid size-14 place-items-center rounded-full bg-accent text-on-accent shadow-lg shadow-black/20 transition-transform active:scale-95"
+        className="absolute right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-20 grid size-14 place-items-center rounded-full bg-accent text-on-accent shadow-lg shadow-black/20 transition-transform active:scale-95"
       >
         <Plus size={26} strokeWidth={2.25} />
       </Link>
