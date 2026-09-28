@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="fr-CH">
+<head>
+<meta charset="utf-8">
+<title>JCSD — Guide de l'application</title>
+<style>
+  @page {
+    size: A4;
+    margin: 16mm 16mm 18mm;
+    @bottom-center { content: counter(page); font: 9pt "Noto Sans", sans-serif; color: #777; }
+  }
+  @page :first { @bottom-center { content: none; } }
+
+  :root { --ink: #111; --muted: #5f5f5a; --line: #e2e2dc; --jaune: #f5c400; --fond: #f6f6f4; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 10pt/1.5 "Noto Sans", system-ui, sans-serif; color: var(--ink); background: #fff; }
+  h1, h2, h3 { line-height: 1.2; margin: 0; }
+  h2 { font-size: 19pt; break-before: page; display: flex; align-items: baseline; gap: 3mm; margin-bottom: 4mm; }
+  h2 .num { display: inline-grid; place-items: center; min-width: 9mm; height: 9mm; border-radius: 2mm;
+            background: var(--jaune); font-size: 13pt; }
+  h3 { font-size: 12pt; margin: 7mm 0 2mm; }
+  p { margin: 0 0 2.5mm; }
+  ul.simple { margin: 0 0 3mm; padding-left: 5mm; }
+  ul.simple li { margin-bottom: 1mm; }
+  code, kbd { font: 9pt "Noto Sans Mono", ui-monospace, monospace; background: var(--fond); padding: 0.3mm 1.2mm; border-radius: 1mm; }
+  strong { font-weight: 650; }
+
+  .note { border-left: 1.2mm solid var(--jaune); background: var(--fond); padding: 2.5mm 4mm; margin: 3mm 0 4mm; border-radius: 0 1.5mm 1.5mm 0; }
+  .note p:last-child { margin: 0; }
+  .note .titre { font-weight: 650; display: block; margin-bottom: 0.5mm; }
+
+  table { border-collapse: collapse; width: 100%; margin: 2mm 0 4mm; font-size: 9.5pt; }
+  th, td { text-align: left; padding: 1.8mm 2.5mm; border-bottom: 0.3mm solid var(--line); vertical-align: top; }
+  th { font-weight: 650; background: var(--fond); }
+  td.c, th.c { text-align: center; }
+
+  /* ── Couverture ─────────────────────────────────────────── */
+  .couverture { height: 255mm; display: flex; flex-direction: column; justify-content: center; }
+  .couverture img { width: 105mm; margin-bottom: 14mm; }
+  .couverture h1 { font-size: 30pt; letter-spacing: -0.02em; }
+  .couverture .sous { font-size: 13pt; color: var(--muted); margin-top: 3mm; }
+  .couverture .bande { width: 30mm; height: 2.2mm; background: var(--jaune); margin: 10mm 0 6mm; }
+  .couverture .meta { font-size: 9.5pt; color: var(--muted); }
+
+  .sommaire { break-before: page; }
+  .sommaire h1 { font-size: 19pt; margin-bottom: 6mm; }
+  .sommaire ol { list-style: none; padding: 0; margin: 0; counter-reset: s; }
+  .sommaire li { counter-increment: s; border-bottom: 0.3mm solid var(--line); }
+  .sommaire a { display: flex; gap: 4mm; padding: 2.6mm 0; color: inherit; text-decoration: none; font-size: 11pt; }
+  .sommaire a::before { content: counter(s); font-weight: 650; min-width: 6mm; }
+  .sommaire .desc { color: var(--muted); font-size: 9.5pt; margin-left: auto; }
+
+  /* ── Écran annoté ───────────────────────────────────────── */
+  figure.ecran { position: relative; display: grid; grid-template-columns: 72mm 1fr; column-gap: 16mm;
+                 margin: 4mm 0 6mm; break-inside: avoid; }
+  figure.ecran .tel { position: relative; width: 72mm; }
+  figure.ecran .tel img { display: block; width: 100%; border-radius: 3.5mm; border: 0.35mm solid #cfcfc8;
+                          box-shadow: 0 0.8mm 3mm rgba(0,0,0,.12); }
+  figure.ecran .tel figcaption { font-size: 8.5pt; color: var(--muted); text-align: center; margin-top: 1.5mm; }
+  figure.ecran ol.legendes { position: relative; list-style: none; margin: 0; padding: 0; counter-reset: l; }
+  figure.ecran ol.legendes > li { counter-increment: l; position: absolute; left: 0; right: 0; padding-left: 8mm;
+                                  font-size: 9.2pt; line-height: 1.4; }
+  figure.ecran ol.legendes > li::before { content: counter(l); position: absolute; left: 0; top: -0.2mm;
+    width: 5.6mm; height: 5.6mm; border-radius: 50%; background: var(--jaune); border: 0.35mm solid var(--ink);
+    display: grid; place-items: center; font-weight: 700; font-size: 8.5pt; }
+  figure.ecran ol.legendes b { font-weight: 650; }
+  figure.ecran svg.fleches { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  
+
+  .deux { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; align-items: start; break-inside: avoid; margin: 4mm 0; }
+  .deux img { width: 58mm; border-radius: 3.5mm; border: 0.35mm solid #cfcfc8; display: block; }
+  .deux .leg { font-size: 8.5pt; color: var(--muted); margin-top: 1.5mm; }
+
+
+  /* Largeur fixe = largeur utile de la page A4 : les flèches sont calculées
+     avant l'impression et doivent tomber au même endroit. */
+  main { width: 178mm; }
+  h3 { break-after: avoid; }
+  h3 + figure, h3 + p { break-before: avoid; }
+
+  @media screen {
+    body { background: #ddd; }
+    main { width: 210mm; margin: 10mm auto; background: #fff; padding: 16mm; box-sizing: border-box; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<section class="couverture">
+  <img src="../../design/logo.png" alt="Jeunesse de Châtel-St-Denis">
+  <h1>Guide de l'application</h1>
+  <p class="sous">Présences de la Jeunesse de Châtel-St-Denis</p>
+  <div class="bande"></div>
+  <p class="meta">jeunesse-csd.vercel.app<br>
+  Pour les membres du comité · septembre 2026<br>
+  Les captures ont été faites avec des membres fictifs.</p>
+</section>
+
+<nav class="sommaire">
+  <h1>Sommaire</h1>
+  <ol>
+    <li><a href="#principes">Le principe <span class="desc">séances, présences, poids, rôles</span></a></li>
+    <li><a href="#connexion">Installer et se connecter</a></li>
+    <li><a href="#calendrier">Le calendrier</a></li>
+    <li><a href="#seance">Créer une séance</a></li>
+    <li><a href="#saisie">Pointer les présences</a></li>
+    <li><a href="#options">Modifier ou supprimer une séance</a></li>
+    <li><a href="#classement">Membres et classement <span class="desc">filtres, export CSV</span></a></li>
+    <li><a href="#fiche">Fiche d'un membre, ajout et modification</a></li>
+    <li><a href="#categories">Les catégories</a></li>
+    <li><a href="#reglages">Réglages personnels</a></li>
+    <li><a href="#admin">Administration du comité <span class="desc">admin seulement</span></a></li>
+  </ol>
+</nav>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="principes"><span class="num">1</span>Le principe</h2>
+
+<p>L'application compte les présences des membres de la jeunesse aux travaux (char, costumes, rangements…). Tout
+repose sur quatre notions.</p>
+
+<table>
+  <tr><th style="width:30mm">Notion</th><th>Ce que c'est</th></tr>
+  <tr><td><strong>Catégorie</strong></td><td>Le type de travail : Char, Costume… Chaque catégorie a une couleur.</td></tr>
+  <tr><td><strong>Séance</strong></td><td>Un jour + une catégorie, par exemple « Char du samedi 26 septembre ». Il ne peut y avoir qu'une
+    séance par catégorie et par jour : si deux personnes du comité la créent en même temps, elles tombent sur la même.</td></tr>
+  <tr><td><strong>Présence</strong></td><td>Une personne cochée dans une séance. Pas cochée = absente. Il n'y a rien d'autre à remplir.</td></tr>
+  <tr><td><strong>Poids</strong></td><td>Ce que vaut une séance : en général <strong>1</strong> (soirée) ou <strong>2</strong> (journée complète).
+    <strong>0.5</strong> reste possible pour un petit travail d'une heure ou deux. Une personne peut avoir un poids différent du reste du groupe, par exemple
+    si elle n'est venue que l'après-midi.</td></tr>
+</table>
+
+<p>Le <strong>classement</strong> additionne, pour chaque personne, le poids des séances où elle était présente.
+Deux journées complètes et une soirée de char donnent 2 + 2 + 1 = 5.</p>
+
+<h3>Deux rôles</h3>
+<p>Seul le comité a un compte. Les membres de la jeunesse n'utilisent pas l'application.</p>
+<table>
+  <tr><th>Action</th><th class="c">Comité</th><th class="c">Admin</th></tr>
+  <tr><td>Créer des séances, pointer, voir le classement, exporter</td><td class="c">oui</td><td class="c">oui</td></tr>
+  <tr><td>Ajouter et modifier des membres, créer et modifier des catégories</td><td class="c">oui</td><td class="c">oui</td></tr>
+  <tr><td>Supprimer une séance</td><td class="c">les siennes</td><td class="c">toutes</td></tr>
+  <tr><td>Supprimer un membre ou une catégorie jamais utilisés</td><td class="c">non</td><td class="c">oui</td></tr>
+  <tr><td>Créer les comptes du comité, les désactiver, réinitialiser un mot de passe</td><td class="c">non</td><td class="c">oui</td></tr>
+</table>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="connexion"><span class="num">2</span>Installer et se connecter</h2>
+
+<h3>Installer l'application sur le téléphone</h3>
+<p>Adresse de l'application : <strong><code>jeunesse-csd.vercel.app</code></strong></p>
+<p>Elle s'ouvre dans le navigateur, mais elle s'utilise mieux installée : elle a alors sa propre icône et
+s'ouvre en plein écran.</p>
+<ul class="simple">
+  <li><strong>iPhone</strong> : ouvrir l'adresse dans <strong>Safari</strong> → bouton Partager → <em>Sur l'écran d'accueil</em>.</li>
+  <li><strong>Android</strong> : ouvrir l'adresse dans <strong>Chrome</strong> → menu ⋮ → <em>Installer l'application</em>
+    (ou <em>Ajouter à l'écran d'accueil</em>).</li>
+</ul>
+
+<h3>Se connecter</h3>
+<figure class="ecran" data-capture="connexion">
+  <div class="tel"><img src="captures/connexion.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>E-mail</b> : l'adresse donnée par l'admin lors de la création du compte. C'est ton identifiant, pas ton nom.</li>
+    <li><b>Mot de passe</b> : la première fois, le mot de passe provisoire reçu de l'admin (par exemple <code>k7mq-x3fa-9hwt</code>).</li>
+    <li><b>Se connecter</b>. Tu restes connecté ensuite : pas besoin de retaper le mot de passe à chaque ouverture.</li>
+  </ol>
+</figure>
+
+<h3>Première connexion</h3>
+<figure class="ecran" data-capture="premier-mdp">
+  <div class="tel"><img src="captures/premier-mdp.png" alt=""></div>
+  <ol class="legendes">
+    <li>Tant que le mot de passe provisoire n'est pas changé, l'application affiche uniquement cet écran.</li>
+    <li>Choisis un mot de passe d'<b>au moins 8 caractères</b>, différent du provisoire, et tape-le deux fois.</li>
+    <li><b>Enregistrer</b> ouvre l'application.</li>
+  </ol>
+</figure>
+
+<div class="note"><span class="titre">Mot de passe oublié</span>
+<p>Il n'y a pas de lien « mot de passe oublié » : demande à un admin, il te donne un nouveau mot de passe provisoire
+(voir <a href="#admin">chapitre 11</a>).</p></div>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="calendrier"><span class="num">3</span>Le calendrier</h2>
+
+<p>C'est l'écran d'accueil. Il montre le mois en cours et toutes ses séances.</p>
+
+<figure class="ecran" data-capture="calendrier">
+  <div class="tel"><img src="captures/calendrier.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Mois affiché.</b> Quand tu regardes un autre mois, un bouton <em>Aujourd'hui</em> apparaît à côté pour revenir.</li>
+    <li><b>Mois précédent / suivant.</b></li>
+    <li><b>Un jour avec des séances</b> : une pastille par séance, de la couleur de sa catégorie. Toucher un jour ouvre sa page.</li>
+    <li><b>Aujourd'hui</b>, sur fond jaune.</li>
+    <li><b>Séances du mois</b> : date, catégorie, poids (affiché s'il n'est pas 1) et nombre de présents. Toucher une ligne ouvre le pointage.</li>
+    <li><b>Nouvelle séance</b> : ouvre la page d'aujourd'hui (chapitre suivant).</li>
+    <li><b>Navigation</b> entre les trois parties de l'application : Calendrier, Membres, Réglages.</li>
+  </ol>
+</figure>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="seance"><span class="num">4</span>Créer une séance</h2>
+
+<p>On crée une séance depuis la page d'un jour : avec le bouton <strong>+</strong> du calendrier pour aujourd'hui, ou en
+touchant un autre jour dans le calendrier.</p>
+
+<figure class="ecran" data-capture="jour-vide">
+  <div class="tel"><img src="captures/jour-vide.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Jour précédent / suivant</b>, pour saisir une séance oubliée la veille par exemple.</li>
+    <li><b>Compte pour</b> : le poids de la séance, <b>à choisir avant</b> de toucher la catégorie : 1 pour une soirée,
+      2 pour une journée complète, 0.5 pour un petit travail d'une heure ou deux. Il reste modifiable ensuite
+      dans les options.</li>
+    <li><b>Catégories permanentes</b> : un bouton par catégorie qui n'a pas encore de séance ce jour-là. Le toucher crée la
+      séance et ouvre directement le pointage.</li>
+    <li><b>Autre catégorie</b> : pour un travail ponctuel qui n'a pas de bouton (rangement après la fête, loto…).</li>
+  </ol>
+</figure>
+
+<h3>Travail ponctuel</h3>
+<figure class="ecran" data-capture="jour-ponctuelle">
+  <div class="tel"><img src="captures/jour-ponctuelle.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Nom du travail.</b> Les catégories ponctuelles déjà utilisées sont proposées pendant la frappe. Retaper un nom
+      existant, même avec d'autres majuscules, réutilise la même catégorie : les présences s'additionnent au classement.</li>
+    <li><b>Couleur</b>, utilisée seulement si la catégorie est nouvelle.</li>
+    <li><b>Créer</b> ouvre le pointage. La nouvelle catégorie n'ajoute pas de bouton à la page des jours : elle est rangée
+      parmi les ponctuelles (voir <a href="#categories">chapitre 9</a>).</li>
+  </ol>
+</figure>
+
+<h3>Un jour qui a déjà des séances</h3>
+<figure class="ecran" data-capture="jour-seances">
+  <div class="tel"><img src="captures/jour-seances.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Séance existante</b> : catégorie, poids, nombre de présents. La toucher pour pointer ou corriger.</li>
+    <li><b>Remarque</b> de la séance, si quelqu'un en a mis une.</li>
+    <li>Ici, Char et Costume ont déjà leur séance : il n'y a plus de bouton, seulement le champ pour un travail ponctuel.</li>
+  </ol>
+</figure>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="saisie"><span class="num">5</span>Pointer les présences</h2>
+
+<p>La liste contient tous les membres, par ordre alphabétique du prénom. <strong>Il n'y a pas de bouton
+« Enregistrer »</strong> : chaque coche est enregistrée tout de suite.</p>
+
+<figure class="ecran" data-capture="saisie">
+  <div class="tel"><img src="captures/saisie.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Recherche</b> par prénom ou nom, sans se soucier des accents ni des majuscules.</li>
+    <li><b>Nombre de présents</b>, mis à jour à chaque coche.</li>
+    <li><b>Filtres</b> : tout le monde, seulement les présents (pour vérifier), ou seulement les absents (pour trouver qui manque).</li>
+    <li><b>Absent</b> : toucher n'importe où sur la ligne pour cocher.</li>
+    <li><b>Présent</b> : ligne jaune. Toucher à nouveau pour décocher.</li>
+    <li><b>Poids de la personne.</b> Gris = poids de la séance. Jaune = poids personnel : Léa n'est venue que
+      l'après-midi, elle compte 1 au lieu de 2.</li>
+    <li><b>Options de la séance</b> : poids, remarque, suppression (chapitre 6).</li>
+  </ol>
+</figure>
+
+<h3>Poids d'une personne</h3>
+<figure class="ecran" data-capture="saisie-poids">
+  <div class="tel"><img src="captures/saisie-poids.png" alt=""></div>
+  <ol class="legendes">
+    <li>Toucher la pastille d'une personne cochée ouvre le choix du poids.</li>
+    <li>Choisir la valeur. Rechoisir le poids de la séance (ici 2) supprime l'exception : la pastille redevient grise.</li>
+  </ol>
+</figure>
+
+<figure class="ecran" data-capture="saisie-recherche">
+  <div class="tel"><img src="captures/saisie-recherche.png" alt=""></div>
+  <ol class="legendes">
+    <li>Taper <code>zoe</code> suffit…</li>
+    <li>… pour trouver Zoé Tâche. Pratique quand trente personnes arrivent en même temps.</li>
+  </ol>
+</figure>
+
+<div class="note"><span class="titre">À plusieurs téléphones</span>
+<p>Plusieurs membres du comité peuvent pointer la même séance en même temps : chaque coche est indépendante. La liste
+se met à jour toute seule toutes les 15 secondes et quand on revient dans l'application, pour afficher les coches
+des autres.</p></div>
+
+<div class="note"><span class="titre">Sans réseau</span>
+<p>Si la connexion coupe, la case revient à son état précédent et le message « Pas de connexion : le dernier changement
+n'est pas enregistré » s'affiche. Une case qui reste cochée est donc bien enregistrée. Il suffit de recocher quand le
+réseau revient.</p></div>
+
+<p>Les anciens membres n'apparaissent plus dans la liste, sauf dans les séances où ils étaient présents : leur
+historique reste lisible.</p>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="options"><span class="num">6</span>Modifier ou supprimer une séance</h2>
+
+<figure class="ecran" data-capture="options">
+  <div class="tel"><img src="captures/options.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Poids de la séance.</b> Le changer met à jour tous les présents qui n'ont pas de poids personnel, et le
+      classement avec.</li>
+    <li><b>Remarque</b> libre, affichée sur la page du jour (« Peinture », « Montage de la structure »…).</li>
+    <li><b>Auteur</b> de la séance.</li>
+    <li><b>Supprimer la séance</b>, avec toutes ses présences. Visible seulement pour l'auteur de la séance et pour les admins.</li>
+  </ol>
+</figure>
+
+<p>La date et la catégorie d'une séance ne se modifient pas. Une séance créée sur le mauvais jour se supprime et se
+recrée au bon jour.</p>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="classement"><span class="num">7</span>Membres et classement</h2>
+
+<p>L'onglet <strong>Membres</strong> est à la fois la liste des personnes et le classement. Chaque filtre s'applique
+dès qu'on le change.</p>
+
+<figure class="ecran" data-capture="membres">
+  <div class="tel"><img src="captures/membres.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Export CSV</b> du classement affiché, avec les mêmes filtres.</li>
+    <li><b>Ajouter</b> une personne ou une liste (chapitre 8).</li>
+    <li><b>Période</b> : une année civile, <em>Tout</em> depuis le début, ou <em>Dates</em> pour choisir un début et une fin.</li>
+    <li><b>Catégorie</b> : toutes, ou une seule (classement du char uniquement, par exemple).</li>
+    <li><b>Statut</b> : actifs et passifs, ou l'un des deux.</li>
+    <li><b>Anciens membres</b> : les inclut dans la liste, en gris.</li>
+    <li><b>Rang et total</b> (somme des poids). Les trois premiers sont en jaune. Les ex æquo partagent le même rang et le
+      suivant saute : 4, 4, 4, puis 7.</li>
+    <li><b>passif</b> : membre passif de la société.</li>
+  </ol>
+</figure>
+
+<figure class="ecran" data-capture="membres-dates">
+  <div class="tel"><img src="captures/membres-dates.png" alt=""></div>
+  <ol class="legendes">
+    <li>Avec <em>Dates</em>, deux champs apparaissent : <b>début</b>…</li>
+    <li>… et <b>fin</b> de la période, incluses.</li>
+    <li>Avec <em>Anciens membres</em> coché, Yann Borcard, qui a quitté la jeunesse, réapparaît en gris avec ses présences
+      (retrouvé ici avec la recherche, qui filtre la liste sans changer les rangs).</li>
+  </ol>
+</figure>
+
+<h3>Export CSV</h3>
+<p>L'icône de téléchargement produit un fichier <code>classement-2026-01-01-2026-12-31.csv</code> avec les colonnes
+Rang, Prénom, Nom, Statut, Présences. Il contient exactement ce qui est affiché (période, catégorie, statut, anciens
+membres) et s'ouvre directement dans Excel, accents compris. La recherche par nom n'est pas prise en compte :
+le fichier contient toute la liste filtrée. Attends que la liste soit à jour après un changement de
+filtre avant de toucher l'export.</p>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="fiche"><span class="num">8</span>Fiche d'un membre, ajout et modification</h2>
+
+<p>Toucher un nom dans le classement ouvre sa fiche.</p>
+
+<figure class="ecran" data-capture="fiche">
+  <div class="tel"><img src="captures/fiche.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Modifier</b> la personne.</li>
+    <li><b>Total</b> depuis le début, toutes catégories confondues (la fiche n'est pas filtrée par période).</li>
+    <li><b>Total par catégorie.</b></li>
+    <li><b>Historique</b> par année : date, catégorie et poids de chaque séance (Léa compte 1 le 26 septembre).
+      Toucher une ligne ouvre la séance.</li>
+  </ol>
+</figure>
+
+<figure class="ecran" data-capture="modifier">
+  <div class="tel"><img src="captures/modifier.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Prénom et nom.</b> Ce sont les seules données personnelles enregistrées : des membres peuvent être mineurs.</li>
+    <li><b>Actif / passif</b> : le statut dans la société.</li>
+    <li><b>Ancien membre</b> : la personne a quitté la jeunesse. Elle disparaît du pointage et du classement (sauf avec
+      le filtre <em>Anciens membres</em>), mais son historique est conservé. Décocher la fait revenir.</li>
+  </ol>
+</figure>
+
+<div class="note"><span class="titre">Supprimer ou archiver ?</span>
+<p>Un membre n'est jamais supprimé une fois qu'il a une présence : on coche <em>Ancien membre</em>. Un admin voit un
+bouton <em>Supprimer ce membre</em> seulement pour une personne qui n'a aucune présence, par exemple ajoutée par erreur.</p></div>
+
+<h3>Ajouter des membres</h3>
+<figure class="ecran" data-capture="ajout">
+  <div class="tel"><img src="captures/ajout.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Une personne</b> : prénom, nom, statut.</li>
+    <li><b>Ajouter.</b> Le formulaire se vide pour la personne suivante.</li>
+    <li><b>Ajouter une liste</b> : une personne par ligne, prénom et nom séparés par un point-virgule, avec
+      <code>; passif</code> en plus pour un membre passif. Si une ligne est mal écrite, rien n'est ajouté et le numéro de la
+      ligne est indiqué.</li>
+  </ol>
+</figure>
+
+<p>Exemple de liste, à taper ou à coller depuis un fichier texte (un copier-coller depuis Excel sépare les
+colonnes par des tabulations, pas par des points-virgules) :</p>
+<p><code>Léa ; Pittet</code><br><code>Jean-Marc ; Du Pasquier</code><br><code>Julie ; Maillard ; passif</code></p>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="categories"><span class="num">9</span>Les catégories</h2>
+
+<p>Réglages → <strong>Catégories</strong>. Il en existe deux sortes :</p>
+<ul class="simple">
+  <li><strong>Permanentes</strong> (Char, Costume) : elles ont un bouton sur la page de chaque jour.</li>
+  <li><strong>Ponctuelles</strong> (cochées <em>Archivée</em>) : pas de bouton. On les retrouve en tapant leur nom dans
+    <em>Autre catégorie</em>. Leurs séances comptent normalement au classement.</li>
+</ul>
+
+<figure class="ecran" data-capture="categories">
+  <div class="tel"><img src="captures/categories.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Catégorie permanente</b> et nombre de séances. Toucher pour déplier.</li>
+    <li><b>Nom</b>, modifiable : l'historique suit, rien n'est perdu.</li>
+    <li><b>Couleur</b> des boutons, pastilles et étiquettes.</li>
+    <li><b>Archivée</b> : la catégorie devient ponctuelle et perd son bouton. Décocher pour la rendre permanente
+      (une saison de char qui recommence, par exemple).</li>
+    <li><b>Catégorie ponctuelle</b>, en grisé.</li>
+  </ol>
+</figure>
+
+<figure class="ecran" data-capture="categories-nouvelle">
+  <div class="tel"><img src="captures/categories-nouvelle.png" alt=""></div>
+  <ol class="legendes">
+    <li>En bas de la liste : <b>nom</b> et couleur d'une nouvelle catégorie permanente. Deux catégories ne peuvent pas
+      avoir le même nom, même écrit avec d'autres majuscules.</li>
+    <li><b>Créer.</b> Le bouton apparaît aussitôt sur la page des jours.</li>
+  </ol>
+</figure>
+
+<p>Un admin voit un bouton <em>Supprimer</em> dans une catégorie qui n'a jamais été utilisée. Une catégorie qui a des
+séances s'archive au lieu de se supprimer.</p>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="reglages"><span class="num">10</span>Réglages personnels</h2>
+
+<figure class="ecran" data-capture="reglages">
+  <div class="tel"><img src="captures/reglages.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Apparence</b> : suivre le téléphone (Système), toujours clair ou toujours sombre.</li>
+    <li><b>Catégories</b> (chapitre 9).</li>
+    <li><b>Comité</b> : gestion des comptes, visible seulement pour les admins (chapitre 11).</li>
+    <li><b>Ton nom</b>, affiché aux autres membres du comité, par exemple comme auteur d'une séance.</li>
+  </ol>
+</figure>
+
+<figure class="ecran" data-capture="reglages-bas">
+  <div class="tel"><img src="captures/reglages-bas.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Changer de mot de passe</b> : 8 caractères au minimum, tapé deux fois.</li>
+    <li><b>Se déconnecter</b>, utile sur un téléphone prêté.</li>
+  </ol>
+</figure>
+
+<div class="deux">
+  <div><img src="captures/reglages-comite.png" alt="">
+    <p class="leg">Les mêmes réglages vus par un membre du comité qui n'est pas admin : pas d'entrée <em>Comité</em>.</p></div>
+  <div><img src="captures/calendrier-sombre.png" alt="">
+    <p class="leg">Le calendrier en apparence sombre.</p></div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2 id="admin"><span class="num">11</span>Administration du comité</h2>
+
+<p>Réservé aux admins : Réglages → <strong>Comité</strong>. Chaque membre du comité a son propre compte, que seul un
+admin peut créer. Personne ne peut s'inscrire seul.</p>
+
+<figure class="ecran" data-capture="comite">
+  <div class="tel"><img src="captures/comite.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Dernière connexion</b> de la personne.</li>
+    <li><b>Passer admin</b> / <b>Retirer admin</b>.</li>
+    <li><b>Désactiver</b> : la personne ne peut plus se connecter (départ du comité). Tout ce qu'elle a saisi est conservé.
+      <em>Réactiver</em> annule.</li>
+    <li><b>Mot de passe provisoire</b>, pour une personne qui a oublié le sien : un mot de passe est proposé.
+      <em>Définir</em> remplace son mot de passe actuel, et elle devra en choisir un nouveau à sa prochaine
+      connexion. Transmets-lui toi-même le mot de passe provisoire.</li>
+    <li><b>admin</b> : ce compte a les droits d'administration. « (toi) » marque ton propre compte, sur lequel aucune
+      action n'est possible : un admin ne peut pas se retirer ses droits lui-même.</li>
+  </ol>
+</figure>
+
+<h3>Créer un compte</h3>
+<figure class="ecran" data-capture="comite-nouveau">
+  <div class="tel"><img src="captures/comite-nouveau.png" alt=""></div>
+  <ol class="legendes">
+    <li><b>Nom</b> affiché dans l'application.</li>
+    <li><b>E-mail</b> : l'identifiant de connexion. Il doit être correctement écrit (<code>nom@domaine.ch</code>), mais
+      aucun e-mail n'est envoyé.</li>
+    <li><b>Mot de passe provisoire</b>, proposé automatiquement (sans caractères ambigus comme 0/O ou 1/l).</li>
+    <li><b>Créer le compte.</b> Un message affiche l'e-mail et le mot de passe à transmettre à la personne.</li>
+  </ol>
+</figure>
+
+<div class="note"><span class="titre">Changement de comité</span>
+<p>Pour une personne qui quitte le comité : <em>Désactiver</em>. Pour un nouveau : <em>Créer le compte</em>, puis
+lui transmettre l'e-mail et le mot de passe provisoire. Il choisira son propre mot de passe à sa première connexion.
+Les comptes ne sont jamais supprimés, pour que l'historique garde ses auteurs.</p></div>
+
+</main>
+
+<script src="captures/annotations.js"></script>
+<script>
+// Relie chaque légende à son élément sur la capture : cadre autour de
+// l'élément, légende placée à sa hauteur, flèche coudée de l'une à l'autre.
+(async () => {
+  await document.fonts.ready;
+  await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+  const NS = "http://www.w3.org/2000/svg";
+  const LARGEUR_ECRAN = 390;
+  const ECART = 6; // px entre deux légendes
+
+  for (const fig of document.querySelectorAll("figure.ecran")) {
+    const id = fig.dataset.capture;
+    const boites = window.ANNOTATIONS?.[id] ?? [];
+    const img = fig.querySelector("img");
+    const liste = fig.querySelector("ol.legendes");
+    const items = [...liste.children];
+    if (items.length !== boites.length) console.error(`${id} : ${items.length} légendes pour ${boites.length} cibles`);
+
+    const rf = fig.getBoundingClientRect();
+    const ri = img.getBoundingClientRect();
+    const rl = liste.getBoundingClientRect();
+    const s = ri.width / LARGEUR_ECRAN;
+    const ox = ri.left - rf.left, oy = ri.top - rf.top;
+    liste.style.height = `${ri.height}px`;
+
+    // Hauteur voulue = centre de la cible, puis on écarte les légendes qui se chevauchent.
+    const places = items.map((li, i) => {
+      const b = boites[i];
+      const cy = oy + (b.y + b.h / 2) * s;
+      return { li, b, cy, h: li.getBoundingClientRect().height };
+    });
+    const ordre = [...places].sort((a, b) => a.cy - b.cy);
+    let bas = 0;
+    for (const p of ordre) {
+      p.top = Math.max(p.cy - (rl.top - rf.top) - 10, bas);
+      bas = p.top + p.h + ECART;
+    }
+    const depasse = bas - ECART - ri.height;
+    if (depasse > 0) {
+      let limite = ri.height;
+      for (const p of ordre.reverse()) {
+        p.top = Math.min(p.top, limite - p.h);
+        limite = p.top - ECART;
+      }
+    }
+    for (const p of places) p.li.style.top = `${Math.max(0, p.top)}px`;
+
+    const svg = document.createElementNS(NS, "svg");
+    svg.classList.add("fleches");
+    svg.innerHTML = `<defs><marker id="p-${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#111"/></marker></defs>`;
+    const coude = ox + ri.width + 9;
+
+    places.forEach((p, i) => {
+      const { b } = p;
+      const x = ox + b.x * s, y = oy + b.y * s, w = b.w * s, h = b.h * s;
+      const cadre = document.createElementNS(NS, "rect");
+      Object.entries({ x: x - 1.5, y: y - 1.5, width: w + 3, height: h + 3, rx: 3,
+        fill: "none", stroke: "#111", "stroke-width": 1.4 }).forEach(([k, v]) => cadre.setAttribute(k, v));
+      const halo = cadre.cloneNode();
+      halo.setAttribute("stroke", "#fff"); halo.setAttribute("stroke-width", 3.4);
+
+      const rli = p.li.getBoundingClientRect();
+      const ly = rli.top - rf.top + 10;
+      const lx = rl.left - rf.left - 3;
+      const tipX = Math.min(x + w + 2, ox + ri.width + 1);
+      const tipY = y + h / 2;
+      const d = `M${lx} ${ly} L${coude} ${ly} L${tipX + 2} ${tipY}`;
+      const trait = document.createElementNS(NS, "path");
+      Object.entries({ d, fill: "none", stroke: "#111", "stroke-width": 1.1, "marker-end": `url(#p-${id})` })
+        .forEach(([k, v]) => trait.setAttribute(k, v));
+      const fond = trait.cloneNode();
+      fond.removeAttribute("marker-end");
+      fond.setAttribute("stroke", "#fff"); fond.setAttribute("stroke-width", 3);
+      svg.append(halo, cadre, fond, trait);
+      void i;
+    });
+    fig.append(svg);
+  }
+  document.body.dataset.pret = "1";
+})();
+</script>
+</body>
+</html>

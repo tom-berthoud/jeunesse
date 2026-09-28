@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="fr-CH">
+<head>
+<meta charset="utf-8">
+<title>JCSD — Guide express</title>
+<style>
+  @page {
+    size: A4;
+    margin: 14mm 16mm 16mm;
+    @bottom-center { content: counter(page); font: 9pt "Noto Sans", sans-serif; color: #777; }
+  }
+
+  :root { --ink: #111; --muted: #5f5f5a; --line: #e2e2dc; --jaune: #f5c400; --fond: #f6f6f4; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 10.5pt/1.5 "Noto Sans", system-ui, sans-serif; color: var(--ink); background: #fff; }
+  /* Largeur fixe = largeur utile de la page A4 : les repères sont calculés avant l'impression. */
+  main { width: 178mm; }
+  h1, h2 { line-height: 1.2; margin: 0; }
+  h2 { font-size: 17pt; break-before: page; display: flex; align-items: center; gap: 3mm; margin-bottom: 4mm; }
+  h2 .num { display: inline-grid; place-items: center; width: 8.5mm; height: 8.5mm; border-radius: 2mm; background: var(--jaune); font-size: 12pt; }
+  p { margin: 0 0 2.5mm; }
+  code { font: 9.5pt "Noto Sans Mono", ui-monospace, monospace; background: var(--fond); padding: 0.3mm 1.2mm; border-radius: 1mm; }
+  strong, b { font-weight: 650; }
+
+  /* ── En-tête ────────────────────────────────────────────── */
+  .entete { display: flex; align-items: center; justify-content: space-between; gap: 8mm; margin-bottom: 6mm; }
+  .entete img { width: 62mm; }
+  .entete h1 { font-size: 24pt; letter-spacing: -0.02em; }
+  .entete .adresse { display: inline-block; margin-top: 2.5mm; padding: 1.5mm 3mm; border-radius: 1.5mm;
+                     background: var(--jaune); font-weight: 700; font-size: 12pt; }
+  .bande { height: 1.6mm; background: var(--jaune); width: 30mm; margin: 0 0 6mm; }
+
+  .blocs { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .bloc { background: var(--fond); border-radius: 2.5mm; padding: 4mm 5mm; }
+  .bloc h3 { font-size: 11.5pt; margin: 0 0 2mm; }
+  .bloc ul { margin: 0; padding-left: 4.5mm; }
+  .bloc li { margin-bottom: 1.2mm; }
+  .bloc.large { grid-column: 1 / -1; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 9.5pt; }
+  th, td { text-align: left; padding: 1.4mm 2mm; border-bottom: 0.3mm solid #dcdcd5; }
+  th { font-weight: 650; }
+  td.c, th.c { text-align: center; }
+
+  /* ── Écrans annotés ─────────────────────────────────────── */
+  .ecrans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7mm; margin: 2mm 0 5mm; }
+  .ecrans.deux { grid-template-columns: repeat(2, 54mm); justify-content: start; }
+  .tel { position: relative; }
+  .tel img { display: block; width: 100%; border-radius: 3.5mm; border: 0.35mm solid #cfcfc8; box-shadow: 0 0.8mm 3mm rgba(0,0,0,.12); }
+  .tel .titre { font-size: 9pt; color: var(--muted); text-align: center; margin-top: 1.5mm; }
+  .tel svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+
+  ol.legendes { list-style: none; margin: 0 0 4mm; padding: 0; columns: 2; column-gap: 8mm; counter-reset: l; }
+  ol.legendes li { counter-increment: l; position: relative; padding-left: 8mm; margin-bottom: 2mm; break-inside: avoid; }
+  ol.legendes li::before { content: counter(l); position: absolute; left: 0; top: 0.2mm; width: 5.6mm; height: 5.6mm;
+    border-radius: 50%; background: var(--jaune); border: 0.35mm solid var(--ink); display: grid; place-items: center;
+    font-weight: 700; font-size: 8.5pt; }
+
+  .astuces { border-left: 1.2mm solid var(--jaune); background: var(--fond); padding: 3mm 4.5mm; border-radius: 0 2mm 2mm 0; }
+  .astuces ul { margin: 0; padding-left: 4.5mm; }
+  .astuces li { margin-bottom: 1.2mm; }
+  .astuces li:last-child { margin-bottom: 0; }
+
+  @media screen {
+    body { background: #ddd; }
+    main { width: 210mm; margin: 10mm auto; background: #fff; padding: 14mm 16mm; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<header class="entete">
+  <div>
+    <h1>Guide express</h1>
+    <p style="color: var(--muted); margin: 1mm 0 0">Présences de la Jeunesse de Châtel-St-Denis</p>
+    <span class="adresse">jeunesse-csd.vercel.app</span>
+  </div>
+  <img src="../../design/logo.png" alt="Jeunesse de Châtel-St-Denis">
+</header>
+<div class="bande"></div>
+
+<div class="blocs">
+  <div class="bloc">
+    <h3>Se connecter</h3>
+    <ul>
+      <li>Identifiant = <b>e-mail</b> + mot de passe provisoire, donnés par un admin.</li>
+      <li>À la première connexion, tu choisis ton mot de passe (8 caractères min.).</li>
+      <li>Mot de passe oublié : demande à un admin.</li>
+    </ul>
+  </div>
+  <div class="bloc">
+    <h3>Installer sur le téléphone</h3>
+    <ul>
+      <li><b>iPhone</b> : Safari → Partager → <i>Sur l'écran d'accueil</i>.</li>
+      <li><b>Android</b> : Chrome → ⋮ → <i>Installer l'application</i>.</li>
+    </ul>
+  </div>
+  <div class="bloc large">
+    <h3>Le principe</h3>
+    <ul>
+      <li>Une <b>séance</b> = un jour + une catégorie (Char, Costume…). Une seule séance par catégorie et par jour.</li>
+      <li>On <b>coche les présents</b>. Pas coché = absent. Pas de bouton « Enregistrer » : tout est enregistré à chaque coche.</li>
+      <li>Chaque séance a un <b>poids</b> : en général <b>1</b> (soirée) ou <b>2</b> (journée complète) ; 0.5 pour un
+        petit travail d'une heure ou deux.</li>
+      <li>Le <b>classement</b> additionne les poids des séances où chacun était présent.</li>
+    </ul>
+  </div>
+  <div class="bloc large">
+    <h3>Qui peut faire quoi</h3>
+    <table>
+      <tr><th></th><th class="c">Comité</th><th class="c">Admin</th></tr>
+      <tr><td>Séances, pointage, classement, membres, catégories</td><td class="c">oui</td><td class="c">oui</td></tr>
+      <tr><td>Supprimer une séance</td><td class="c">les siennes</td><td class="c">toutes</td></tr>
+      <tr><td>Supprimer un membre ou une catégorie jamais utilisés</td><td class="c">—</td><td class="c">oui</td></tr>
+      <tr><td>Comptes du comité (créer, désactiver, mot de passe)</td><td class="c">—</td><td class="c">oui</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2><span class="num">1</span>Pointer une séance</h2>
+
+<div class="ecrans">
+  <div class="tel" data-capture="calendrier" data-cibles="6:g 5:bd"><img src="captures/calendrier.png" alt=""><p class="titre">Calendrier</p></div>
+  <div class="tel" data-capture="jour-vide" data-cibles="2 3 4"><img src="captures/jour-vide.png" alt=""><p class="titre">Page du jour</p></div>
+  <div class="tel" data-capture="saisie" data-cibles="1:di 4 6:g 7:b"><img src="captures/saisie.png" alt=""><p class="titre">Pointage</p></div>
+</div>
+
+<ol class="legendes">
+  <li><b>+</b> : nouvelle séance aujourd'hui. Pour un autre jour, touche le jour dans le calendrier.</li>
+  <li>Une séance existante : la toucher pour pointer ou corriger.</li>
+  <li><b>Poids</b>, à choisir <b>avant</b> la catégorie.</li>
+  <li><b>Catégorie</b> : crée la séance et ouvre le pointage.</li>
+  <li><b>Autre catégorie</b> pour un travail ponctuel (rangement, loto…). Retaper le même nom réutilise la même catégorie.</li>
+  <li><b>Recherche</b>, sans accents ni majuscules (<code>zoe</code> trouve Zoé).</li>
+  <li>Toucher une ligne coche ou décoche la personne.</li>
+  <li><b>Poids perso</b> d'une personne cochée, par exemple 1 au lieu de 2 si elle est arrivée l'après-midi.</li>
+  <li><b>Options</b> : poids de la séance, remarque, suppression.</li>
+</ol>
+
+<div class="astuces"><ul>
+  <li>On peut pointer à <b>plusieurs téléphones</b> la même séance : la liste se met à jour toute seule.</li>
+  <li><b>Sans réseau</b>, la case revient en arrière et un message s'affiche : recoche quand ça capte.</li>
+  <li>Séance créée sur le mauvais jour : Options → <i>Supprimer la séance</i> (auteur ou admin), puis recrée-la.</li>
+</ul></div>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2><span class="num">2</span>Membres et classement</h2>
+
+<div class="ecrans">
+  <div class="tel" data-capture="membres" data-cibles="1:g 2:b 3:h 7:bd"><img src="captures/membres.png" alt=""><p class="titre">Membres</p></div>
+  <div class="tel" data-capture="fiche" data-cibles="1:b 4:bd"><img src="captures/fiche.png" alt=""><p class="titre">Fiche</p></div>
+  <div class="tel" data-capture="ajout" data-cibles="3"><img src="captures/ajout.png" alt=""><p class="titre">Ajouter</p></div>
+</div>
+
+<ol class="legendes">
+  <li><b>Export CSV</b> (Excel) de ce qui est affiché, avec les mêmes filtres.</li>
+  <li><b>Ajouter</b> une personne ou une liste.</li>
+  <li><b>Filtres</b> : année, tout, ou dates libres ; catégorie ; actifs / passifs ; anciens membres.</li>
+  <li><b>Rang et total.</b> Ex æquo = même rang, le suivant saute (4, 4, 4, puis 7). Toucher un nom ouvre sa fiche.</li>
+  <li><b>Modifier</b> : nom, actif / passif, <b>Ancien membre</b> quand quelqu'un quitte la jeunesse.</li>
+  <li><b>Historique</b> de la personne, depuis le début.</li>
+  <li><b>Liste</b> : une personne par ligne, <code>Prénom ; Nom</code> ou <code>Prénom ; Nom ; passif</code>.</li>
+</ol>
+
+<div class="astuces"><ul>
+  <li>Un <b>ancien membre</b> disparaît du pointage et du classement, mais son historique est conservé.</li>
+  <li>On n'enregistre que le prénom et le nom : des membres peuvent être mineurs.</li>
+</ul></div>
+
+<!-- ─────────────────────────────────────────────────────────── -->
+<h2><span class="num">3</span>Catégories et comptes</h2>
+
+<div class="ecrans">
+  <div class="tel" data-capture="categories" data-cibles="1:b 4 5:b"><img src="captures/categories.png" alt=""><p class="titre">Réglages → Catégories</p></div>
+  <div class="tel" data-capture="reglages" data-cibles="1:b 3:b"><img src="captures/reglages.png" alt=""><p class="titre">Réglages</p></div>
+  <div class="tel" data-capture="comite" data-cibles="3:b 4:b"><img src="captures/comite.png" alt=""><p class="titre">Réglages → Comité (admin)</p></div>
+</div>
+
+<ol class="legendes">
+  <li><b>Catégorie permanente</b> : elle a son bouton sur la page de chaque jour. Toucher pour modifier nom et couleur.</li>
+  <li><b>Archivée</b> = ponctuelle : plus de bouton, mais ses séances comptent toujours.</li>
+  <li>Une catégorie <b>ponctuelle</b> (grisée).</li>
+  <li><b>Apparence</b> : système, clair ou sombre.</li>
+  <li><b>Comité</b> : les comptes, visible seulement pour les admins.</li>
+  <li><b>Désactiver</b> un membre du comité qui s'en va : il ne peut plus se connecter, ses saisies restent.</li>
+  <li><b>Mot de passe provisoire</b> pour quelqu'un qui a oublié le sien : il devra le changer à la connexion.</li>
+</ol>
+
+<div class="astuces"><ul>
+  <li><b>Nouveau compte</b> (admin), en bas de la page Comité : nom, e-mail et mot de passe provisoire proposé. Aucun
+    mail n'est envoyé : transmets toi-même l'e-mail et le mot de passe à la personne.</li>
+  <li>Plus bas dans Réglages : ton nom, ton mot de passe, la déconnexion.</li>
+  <li>Rien ne se perd : membres, catégories et comptes s'archivent ou se désactivent au lieu d'être supprimés.</li>
+</ul></div>
+
+</main>
+
+<script src="captures/annotations.js"></script>
+<script>
+// Pose un repère numéroté sur chaque élément désigné par data-cibles
+// (numéros de cible dans captures.mjs), numérotés à la suite sur la page.
+(async () => {
+  await document.fonts.ready;
+  await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+  const NS = "http://www.w3.org/2000/svg";
+  const LARGEUR_ECRAN = 390, R = 9;
+
+  for (const groupe of document.querySelectorAll(".ecrans")) {
+    let n = 0;
+    const tels = [...groupe.querySelectorAll(".tel")];
+    for (const tel of tels) {
+      const boites = window.ANNOTATIONS?.[tel.dataset.capture];
+      if (!boites) { console.error(`capture inconnue : ${tel.dataset.capture}`); continue; }
+      const img = tel.querySelector("img");
+      const s = img.clientWidth / LARGEUR_ECRAN;
+      const W = img.clientWidth, H = img.clientHeight;
+      const svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("width", W); svg.setAttribute("height", H);
+
+      // « k:côté » — d bord droit (défaut), di dedans à droite, g à gauche, h au-dessus,
+      // b en dessous, bd en dessous vers la droite (lignes de liste : entre le nom et le total).
+      for (const [k, cote = "d"] of tel.dataset.cibles.split(" ").map((c) => c.split(":"))) {
+        const b = boites[k - 1];
+        if (!b) { console.error(`${tel.dataset.capture} : cible ${k} absente`); continue; }
+        n++;
+        const x = b.x * s, y = b.y * s, w = b.w * s, h = b.h * s;
+        const el = (tag, attrs) => {
+          const e = document.createElementNS(NS, tag);
+          for (const [a, v] of Object.entries(attrs)) e.setAttribute(a, v);
+          svg.append(e); return e;
+        };
+        el("rect", { x: x - 1.5, y: y - 1.5, width: w + 3, height: h + 3, rx: 3, fill: "none", stroke: "#fff", "stroke-width": 3.4 });
+        el("rect", { x: x - 1.5, y: y - 1.5, width: w + 3, height: h + 3, rx: 3, fill: "none", stroke: "#111", "stroke-width": 1.4 });
+        const [px, py] = {
+          d: [x + w, y + h / 2],
+          di: [x + w - R - 5, y + h / 2],
+          g: [x - R - 3, y + h / 2],
+          h: [x + w / 2, y - R - 3],
+          b: [x + w / 2, y + h + R + 3],
+          bd: [x + w * 0.72, y + h],
+        }[cote];
+        // Gardé dans l'écran.
+        const cx = Math.min(Math.max(px, R + 1), W - R - 1);
+        const cy = Math.min(Math.max(py, R + 1), H - R - 1);
+        el("circle", { cx, cy, r: R, fill: "#f5c400", stroke: "#111", "stroke-width": 1.3 });
+        const t = el("text", { x: cx, y: cy + 3.6, "text-anchor": "middle", "font-size": 10.5, "font-weight": 700,
+          "font-family": "Noto Sans, sans-serif", fill: "#111" });
+        t.textContent = n;
+      }
+      tel.append(svg);
+    }
+    const legendes = groupe.nextElementSibling;
+    if (legendes?.matches("ol.legendes") && legendes.children.length !== n) {
+      console.error(`${n} repères pour ${legendes.children.length} légendes`);
+    }
+  }
+  document.body.dataset.pret = "1";
+})();
+</script>
+</body>
+</html>
