@@ -98,23 +98,13 @@ body {
 }
 
 /* Coquille de l'application : <main> défile dedans, la barre de navigation
-   est en flux dessous. Fixée en haut, avec une hauteur explicite : ni son
-   bas ni dvh ne sont fiables en app installée sur iOS 26 (barre d'état
-   translucide). Au lancement, le viewport y est trop court de la hauteur de
-   la barre d'état (793 au lieu de 852 sur un iPhone 16) et ne se corrige
-   qu'après un geste ; 100vh, lui, vaut toujours la hauteur de l'écran.
-   Dans le navigateur, 100vh passerait sous la barre d'outils de Safari :
-   on garde dvh. Mesures : Réglages → Diagnostic. */
+   est en flux dessous. Fixée et de hauteur explicite, pour ne pas dépendre
+   de la hauteur du document. */
 .coquille {
   position: fixed;
   top: 0;
   inset-inline: 0;
   height: 100dvh;
-}
-@media (display-mode: standalone) {
-  .coquille {
-    height: 100vh;
-  }
 }
 
 .card {
