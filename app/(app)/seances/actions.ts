@@ -137,7 +137,7 @@ export async function enregistrerOptions(_prev: EtatAction, formData: FormData):
   if (error) return { erreur: messageErreur(error) };
   // Le poids change le classement : revalider aussi /membres.
   revalidatePath("/", "layout");
-  return { ok: "Enregistré." };
+  redirect(`/seances/${id.data}`);
 }
 
 export async function supprimerSeance(_prev: EtatAction, formData: FormData): Promise<EtatAction> {

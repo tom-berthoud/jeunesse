@@ -2,13 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireComite } from "@/lib/auth";
 import { dateCourte } from "@/lib/dates";
-import { PageHeader, Pill, PoidsBadge, Section, StatutBadge } from "@/components/ui";
-import { MembreForm } from "../membre-form";
-import { SupprimerMembre } from "./supprimer";
+import { Pencil } from "lucide-react";
+import { IconLink, PageHeader, Pill, PoidsBadge, Section, StatutBadge } from "@/components/ui";
 
 export default async function Membre({ params }: PageProps<"/membres/[id]">) {
   const { id } = await params;
-  const { supabase, profile } = await requireComite();
+  const { supabase } = await requireComite();
 
   const [{ data: membre }, { data: presences }] = await Promise.all([
     supabase.from("membres").select("id, prenom, nom, statut, archive").eq("id", id).maybeSingle(),
@@ -49,7 +48,14 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
       <PageHeader
         back="/membres"
         title={`${membre.prenom} ${membre.nom}`}
-        actions={<StatutBadge statut={membre.statut} />}
+        actions={
+          <>
+            <StatutBadge statut={membre.statut} />
+            <IconLink href={`/membres/${membre.id}/modifier`} aria-label="Modifier" className="-mr-2">
+              <Pencil size={20} />
+            </IconLink>
+          </>
+        }
       />
 
       <div className="card flex items-center justify-between px-4 py-3">
@@ -90,11 +96,6 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
           ))}
         </Section>
       )}
-
-      <Section title="Modifier">
-        <MembreForm membre={membre} />
-        {profile.role === "admin" && historique.length === 0 && <SupprimerMembre id={membre.id} />}
-      </Section>
     </div>
   );
 }

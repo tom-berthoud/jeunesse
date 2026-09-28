@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { supprimerMembre } from "../actions";
+import { supprimerMembre } from "../../actions";
 import { ETAT_INITIAL } from "@/lib/action";
 import { Alert, Button } from "@/components/ui";
 

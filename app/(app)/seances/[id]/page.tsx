@@ -1,18 +1,18 @@
 import { notFound } from "next/navigation";
 import { requireComite } from "@/lib/auth";
 import { dateLongue } from "@/lib/dates";
-import { PageHeader, Pill, PoidsBadge } from "@/components/ui";
+import { SlidersHorizontal } from "lucide-react";
+import { IconLink, PageHeader, Pill, PoidsBadge } from "@/components/ui";
 import { Saisie } from "./saisie";
-import { OptionsSeance } from "./options-seance";
 
 export default async function Seance({ params }: PageProps<"/seances/[id]">) {
   const { id } = await params;
-  const { supabase, userId, profile } = await requireComite();
+  const { supabase } = await requireComite();
 
   const [{ data: seance }, { data: membres }, { data: presences }] = await Promise.all([
     supabase
       .from("seances")
-      .select("id, date, remarque, poids, created_by, categorie:categories(libelle, couleur), auteur:profiles(nom)")
+      .select("id, date, poids, categorie:categories(libelle, couleur)")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("membres").select("id, prenom, nom, statut, archive").order("prenom").order("nom"),
@@ -37,19 +37,14 @@ export default async function Seance({ params }: PageProps<"/seances/[id]">) {
             <Pill color={seance.categorie?.couleur ?? "#6b7280"} className="text-sm">
               {seance.categorie?.libelle}
             </Pill>
+            <IconLink href={`/seances/${seance.id}/options`} aria-label="Options de la séance" className="-mr-2">
+              <SlidersHorizontal size={20} />
+            </IconLink>
           </>
         }
       />
 
-      <Saisie seanceId={seance.id} membres={liste} presents={presents} />
-
-      <OptionsSeance
-        id={seance.id}
-        remarque={seance.remarque}
-        poids={seance.poids}
-        auteur={seance.auteur?.nom ?? null}
-        peutSupprimer={profile.role === "admin" || seance.created_by === userId}
-      />
+      <Saisie seanceId={seance.id} date={seance.date} membres={liste} presents={presents} />
     </div>
   );
 }

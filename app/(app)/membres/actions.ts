@@ -67,7 +67,7 @@ export async function modifierMembre(_prev: EtatAction, formData: FormData): Pro
     .eq("id", id.data);
   if (error) return { erreur: messageErreur(error) };
   revalidatePath("/", "layout");
-  return { ok: "Enregistré." };
+  redirect(`/membres/${id.data}`);
 }
 
 export async function supprimerMembre(_prev: EtatAction, formData: FormData): Promise<EtatAction> {

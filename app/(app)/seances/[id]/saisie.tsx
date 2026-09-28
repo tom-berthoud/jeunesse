@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useOptimistic, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Check, Search } from "lucide-react";
 import { basculerPresence } from "@/app/(app)/seances/actions";
-import { Alert, cn, StatutBadge } from "@/components/ui";
+import { Alert, Button, cn, StatutBadge } from "@/components/ui";
 import { normaliser } from "@/lib/texte";
 import type { StatutMembre } from "@/lib/types/database";
 
@@ -16,13 +17,24 @@ const FILTRES = [
   ["absents", "Absents"],
 ] as const;
 
-export function Saisie({ seanceId, membres, presents }: { seanceId: string; membres: Membre[]; presents: string[] }) {
+export function Saisie({
+  seanceId,
+  date,
+  membres,
+  presents,
+}: {
+  seanceId: string;
+  date: string;
+  membres: Membre[];
+  presents: string[];
+}) {
   // Affiche l'état voulu immédiatement ; revient à l'état serveur à la fin de
   // la transition. En cas d'échec, la case retombe donc d'elle-même.
   const [optimistes, appliquer] = useOptimistic(presents, (etat: string[], a: { id: string; present: boolean }) =>
     a.present ? [...etat, a.id] : etat.filter((x) => x !== a.id),
   );
-  const [, startTransition] = useTransition();
+  const [enCours, startTransition] = useTransition();
+  const router = useRouter();
   const [erreur, setErreur] = useState<string | null>(null);
   const [recherche, setRecherche] = useState("");
   const [filtre, setFiltre] = useState<Filtre>("tous");
@@ -120,6 +132,14 @@ export function Saisie({ seanceId, membres, presents }: { seanceId: string; memb
         })}
         {!visibles.length && <li className="px-4 py-8 text-center text-sm text-ink-faint">—</li>}
       </ul>
+
+      {/* Chaque case est enregistrée dès qu'on la touche : « Valider » ne fait
+          que ramener au jour, une fois les derniers enregistrements terminés. */}
+      <div className="sticky bottom-0 -mx-4 bg-page/95 px-4 pt-2 pb-1 backdrop-blur">
+        <Button disabled={enCours} onClick={() => router.push(`/jour/${date}`)} className="w-full">
+          Valider
+        </Button>
+      </div>
     </div>
   );
 }
