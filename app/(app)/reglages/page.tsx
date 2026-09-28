@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bug, ChevronRight, LogOut, Tags, UserCog } from "lucide-react";
+import { ChevronRight, LogOut, Tags, UserCog } from "lucide-react";
 import { requireComite } from "@/lib/auth";
 import { lireTheme } from "@/lib/theme";
 import { PageHeader, Section } from "@/components/ui";
@@ -14,8 +14,6 @@ export default async function Reglages() {
   const liens = [
     { href: "/reglages/categories", label: "Catégories", icon: Tags },
     ...(profile.role === "admin" ? [{ href: "/reglages/comite", label: "Comité", icon: UserCog }] : []),
-    // TEMPORAIRE : voir reglages/diagnostic.
-    { href: "/reglages/diagnostic", label: "Diagnostic", icon: Bug },
   ];
 
   return (
