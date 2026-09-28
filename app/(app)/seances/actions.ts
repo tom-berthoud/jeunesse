@@ -56,7 +56,13 @@ export async function ouvrirSeance(_prev: EtatAction, formData: FormData): Promi
   redirect(`/seances/${r.id}`);
 }
 
-/** Crée une catégorie depuis la page d'un jour et ouvre directement sa séance. */
+/**
+ * Ouvre une séance d'une catégorie ponctuelle (« Rangement fête ») depuis la
+ * page d'un jour. La catégorie est créée déjà archivée : elle n'encombre pas
+ * les boutons du jour, réservés aux catégories permanentes (Réglages). Si le
+ * nom existe déjà, archivé ou non, on réutilise la catégorie : un deuxième
+ * jour de rangement retombe sur la même.
+ */
 export async function creerCategorieEtSeance(_prev: EtatAction, formData: FormData): Promise<EtatAction> {
   const { supabase } = await requireComite();
   const d = date.safeParse(formData.get("date"));
@@ -66,17 +72,30 @@ export async function creerCategorieEtSeance(_prev: EtatAction, formData: FormDa
   if (!libelle) return { erreur: "Donne un nom à la catégorie." };
   if (!/^#[0-9a-fA-F]{6}$/.test(couleur)) return { erreur: "Couleur invalide." };
 
-  const { data: cat, error } = await supabase
+  // ilike sans joker : égalité insensible à la casse (« rangement fête » = « Rangement fête »).
+  const { data: existante, error: e1 } = await supabase
     .from("categories")
-    .insert({ libelle, couleur })
     .select("id")
-    .single();
-  if (error) {
-    if (error.code === "23505") return { erreur: `La catégorie « ${libelle} » existe déjà.` };
-    return { erreur: messageErreur(error) };
+    .ilike("libelle", libelle.replace(/[\\%_]/g, "\\$&"))
+    .order("archivee")
+    .limit(1)
+    .maybeSingle();
+  if (e1) return { erreur: messageErreur(e1) };
+
+  let categorieId = existante?.id;
+  if (!categorieId) {
+    const { data: cat, error } = await supabase
+      .from("categories")
+      .insert({ libelle, couleur, archivee: true })
+      .select("id")
+      .single();
+    // Créée entre la recherche et l'insertion (autre téléphone) : réessayer la retrouve.
+    if (error?.code === "23505") return { erreur: `« ${libelle} » vient d'être créée : réessaie.` };
+    if (error) return { erreur: messageErreur(error) };
+    categorieId = cat.id;
   }
 
-  const r = await ouvrir(supabase, d.data, cat.id, lirePoids(formData));
+  const r = await ouvrir(supabase, d.data, categorieId, lirePoids(formData));
   if ("erreur" in r) return { erreur: r.erreur };
   revalidatePath("/", "layout");
   redirect(`/seances/${r.id}`);

@@ -148,6 +148,18 @@ begin
 end $$;
 reset role;
 
+-- ── 0003 : nom de catégorie unique sans tenir compte de la casse ──
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+do $$ begin
+  begin
+    insert into public.categories (libelle) values ('char');
+    raise exception 'ÉCHEC : « char » accepté à côté de « Char »';
+  exception when unique_violation then null;
+  end;
+end $$;
+reset role;
+
 -- ── comité désactivé : plus rien ───────────────────────────────
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000d';

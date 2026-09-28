@@ -124,6 +124,10 @@ create table presences (
 - **Actif / passif** est le statut du membre dans la société. Un membre parti
   passe `archive = true` : il disparaît de la saisie, ses présences restent.
 - **Catégorie archivée** plutôt que supprimée, pour la même raison.
+- **Catégories permanentes / ponctuelles** : seules les permanentes (Char,
+  Costume, créées dans Réglages) sont des boutons sur la page d'un jour. Un
+  nom tapé là (« Rangement fête ») crée une catégorie déjà archivée, ou
+  réutilise celle qui porte ce nom, sans tenir compte de la casse (`0003`).
 
 ### Compteur
 
@@ -211,6 +215,6 @@ PWA générées depuis le logo officiel (`design/logo.png` → `scripts/icones.p
       deux dates libres, mais le défaut reste l'année civile.
 - [ ] Barème des poids : 0.5 / 1 / 2 proposés. La base accepte tout multiple
       de 0,5 jusqu'à 5 (`lib/poids.ts` si le comité en veut d'autres).
-- [ ] Deux séances de la même catégorie le même jour, possible ? (sinon on garde
-      la contrainte d'unicité)
+- [x] Deux séances de la même catégorie le même jour : non, la contrainte
+      d'unicité reste. Une journée plus longue se règle par le poids (2 au plus).
 - [ ] Le compteur est-il montré aux membres de la jeunesse ?

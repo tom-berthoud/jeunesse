@@ -16,11 +16,14 @@ export default async function Jour({ params }: PageProps<"/jour/[date]">) {
       .from("seances")
       .select("id, categorie_id, remarque, poids, categorie:categories(libelle, couleur), presences(count)")
       .eq("date", date),
-    supabase.from("categories").select("id, libelle, couleur").eq("archivee", false).order("ordre").order("libelle"),
+    supabase.from("categories").select("id, libelle, couleur, archivee").order("ordre").order("libelle"),
   ]);
 
   const dejaOuvertes = new Set(seances?.map((s) => s.categorie_id));
-  const disponibles = (categories ?? []).filter((c) => !dejaOuvertes.has(c.id));
+  // Boutons : les catégories permanentes. Les ponctuelles (archivées) sont
+  // seulement suggérées quand on tape un nom.
+  const disponibles = (categories ?? []).filter((c) => !c.archivee && !dejaOuvertes.has(c.id));
+  const ponctuelles = (categories ?? []).filter((c) => c.archivee).map((c) => c.libelle);
 
   return (
     <div className="space-y-4">
@@ -57,7 +60,7 @@ export default async function Jour({ params }: PageProps<"/jour/[date]">) {
         </ul>
       )}
 
-      <NouvelleSeance date={date} categories={disponibles} />
+      <NouvelleSeance date={date} categories={disponibles} ponctuelles={ponctuelles} />
     </div>
   );
 }

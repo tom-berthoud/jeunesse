@@ -11,7 +11,15 @@ import { ChoixCouleur } from "@/components/choix-couleur";
 
 type Categorie = { id: string; libelle: string; couleur: string };
 
-export function NouvelleSeance({ date, categories }: { date: string; categories: Categorie[] }) {
+export function NouvelleSeance({
+  date,
+  categories,
+  ponctuelles,
+}: {
+  date: string;
+  categories: Categorie[];
+  ponctuelles: string[];
+}) {
   const [etat, ouvrir, ouverture] = useActionState(ouvrirSeance, ETAT_INITIAL);
   const [etatCat, creer, creation] = useActionState(creerCategorieEtSeance, ETAT_INITIAL);
   const [nouvelle, setNouvelle] = useState(categories.length === 0);
@@ -52,7 +60,20 @@ export function NouvelleSeance({ date, categories }: { date: string; categories:
           <input type="hidden" name="date" value={date} />
           <input type="hidden" name="couleur" value={couleur} />
           <input type="hidden" name="poids" value={poids} />
-          <Input name="libelle" placeholder="Nouvelle catégorie" required autoFocus={categories.length > 0} maxLength={40} />
+          <Input
+            name="libelle"
+            placeholder="Nouvelle catégorie"
+            list="ponctuelles"
+            autoComplete="off"
+            required
+            autoFocus={categories.length > 0}
+            maxLength={40}
+          />
+          <datalist id="ponctuelles">
+            {ponctuelles.map((l) => (
+              <option key={l} value={l} />
+            ))}
+          </datalist>
           <ChoixCouleur valeur={couleur} onChange={setCouleur} />
           {etatCat.erreur && <Alert>{etatCat.erreur}</Alert>}
           <div className="flex gap-2">

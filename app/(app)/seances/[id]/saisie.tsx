@@ -4,6 +4,7 @@ import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { Check, Search } from "lucide-react";
 import { basculerPresence } from "@/app/(app)/seances/actions";
 import { Alert, cn, StatutBadge } from "@/components/ui";
+import { normaliser } from "@/lib/texte";
 import type { StatutMembre } from "@/lib/types/database";
 
 type Membre = { id: string; prenom: string; nom: string; statut: StatutMembre; archive: boolean };
@@ -14,9 +15,6 @@ const FILTRES = [
   ["presents", "Présents"],
   ["absents", "Absents"],
 ] as const;
-
-/** Recherche insensible à la casse et aux accents (« zoe » trouve « Zoé »). */
-const normaliser = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
 export function Saisie({ seanceId, membres, presents }: { seanceId: string; membres: Membre[]; presents: string[] }) {
   // Affiche l'état voulu immédiatement ; revient à l'état serveur à la fin de
