@@ -171,7 +171,7 @@ export function Saisie({
                         perso === undefined ? "bg-surface-2 text-ink-muted" : "bg-accent text-on-accent",
                       )}
                     >
-                      ×{poids}
+                      {poids}
                     </span>
                   </button>
                 )}
@@ -188,7 +188,7 @@ export function Saisie({
                         Number(o.valeur) === poids ? "bg-surface text-ink shadow-sm" : "bg-surface-2 text-ink-muted",
                       )}
                     >
-                      ×{o.label}
+                      {o.label}
                     </button>
                   ))}
                 </div>

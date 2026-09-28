@@ -22,8 +22,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // la barre d'URL du navigateur mobile se rétracte au défilement, la hauteur
   // du viewport change, et la barre de navigation — pourtant en bas — monte et
   // redescend avec elle.
+  //
+  // Coquille calée sur les bords (inset-0) et non h-dvh : en app installée
+  // iOS (barre d'état translucide), dvh est parfois calculé trop court au
+  // lancement et la barre flottait au-dessus du bas de l'écran. Le document
+  // ne défilant pas, fixed ne suit plus la barre d'URL.
   return (
-    <div className="flex h-dvh flex-col overflow-hidden">
+    <div className="fixed inset-0 flex flex-col overflow-hidden">
       <ResetDefilement cible="contenu" />
       <main
         id="contenu"
