@@ -124,6 +124,33 @@ export async function basculerPresence(
   return {};
 }
 
+/**
+ * Poids d'une personne dans la séance (arrivée l'après-midi…). `null` = celui
+ * de la séance : c'est ce que le client envoie quand on rechoisit sa valeur.
+ */
+export async function choisirPoidsPresence(
+  seanceId: string,
+  membreId: string,
+  poids: string | null,
+): Promise<{ erreur?: string }> {
+  const { supabase } = await requireComite();
+  if (!uuid.safeParse(seanceId).success || !uuid.safeParse(membreId).success || (poids !== null && !estPoids(poids))) {
+    return { erreur: "Données invalides." };
+  }
+
+  const { data, error } = await supabase
+    .from("presences")
+    .update({ poids: poids === null ? null : Number(poids) })
+    .eq("seance_id", seanceId)
+    .eq("membre_id", membreId)
+    .select("membre_id");
+  if (error) return { erreur: messageErreur(error) };
+  // Décochée entre-temps sur un autre téléphone.
+  if (!data.length) return { erreur: "Cette personne n'est plus cochée." };
+  revalidatePath(`/seances/${seanceId}`);
+  return {};
+}
+
 export async function enregistrerOptions(_prev: EtatAction, formData: FormData): Promise<EtatAction> {
   const { supabase } = await requireComite();
   const id = uuid.safeParse(formData.get("id"));

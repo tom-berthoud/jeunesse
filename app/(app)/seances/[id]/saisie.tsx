@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useOptimistic, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Check, Search } from "lucide-react";
-import { basculerPresence } from "@/app/(app)/seances/actions";
-import { Alert, Button, cn, StatutBadge } from "@/components/ui";
+import { basculerPresence, choisirPoidsPresence } from "@/app/(app)/seances/actions";
+import { Alert, cn, StatutBadge } from "@/components/ui";
+import { OPTIONS_POIDS, type Poids } from "@/lib/poids";
 import { normaliser } from "@/lib/texte";
 import type { StatutMembre } from "@/lib/types/database";
 
@@ -19,22 +19,35 @@ const FILTRES = [
 
 export function Saisie({
   seanceId,
-  date,
+  poidsSeance,
   membres,
   presents,
+  poidsPerso,
 }: {
   seanceId: string;
-  date: string;
+  poidsSeance: number;
   membres: Membre[];
   presents: string[];
+  /** Poids des seules personnes qui n'ont pas celui de la séance. */
+  poidsPerso: Record<string, number>;
 }) {
   // Affiche l'état voulu immédiatement ; revient à l'état serveur à la fin de
   // la transition. En cas d'échec, la case retombe donc d'elle-même.
   const [optimistes, appliquer] = useOptimistic(presents, (etat: string[], a: { id: string; present: boolean }) =>
     a.present ? [...etat, a.id] : etat.filter((x) => x !== a.id),
   );
-  const [enCours, startTransition] = useTransition();
-  const router = useRouter();
+  const [poidsOptimistes, appliquerPoids] = useOptimistic(
+    poidsPerso,
+    (etat: Record<string, number>, a: { id: string; poids: number | null }) => {
+      const suivant = { ...etat };
+      if (a.poids === null) delete suivant[a.id];
+      else suivant[a.id] = a.poids;
+      return suivant;
+    },
+  );
+  const [, startTransition] = useTransition();
+  // Personne dont le choix du poids est ouvert.
+  const [choixPoids, setChoixPoids] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [recherche, setRecherche] = useState("");
   const [filtre, setFiltre] = useState<Filtre>("tous");
@@ -53,9 +66,24 @@ export function Saisie({
   function basculer(id: string) {
     const present = !set.has(id);
     setErreur(null);
+    if (!present && choixPoids === id) setChoixPoids(null);
     startTransition(async () => {
       appliquer({ id, present });
+      // Décocher supprime la ligne, donc aussi son poids.
+      if (!present) appliquerPoids({ id, poids: null });
       const r = await basculerPresence(seanceId, id, present);
+      if (r.erreur) setErreur(r.erreur);
+    });
+  }
+
+  function choisirPoids(id: string, valeur: Poids) {
+    // Rechoisir le poids de la séance = plus d'exception.
+    const poids = Number(valeur) === poidsSeance ? null : Number(valeur);
+    setChoixPoids(null);
+    setErreur(null);
+    startTransition(async () => {
+      appliquerPoids({ id, poids });
+      const r = await choisirPoidsPresence(seanceId, id, poids === null ? null : valeur);
       if (r.erreur) setErreur(r.erreur);
     });
   }
@@ -104,42 +132,72 @@ export function Saisie({
       <ul className="card divide-y divide-line overflow-hidden">
         {visibles.map((m) => {
           const on = set.has(m.id);
+          const perso = poidsOptimistes[m.id];
+          const poids = perso ?? poidsSeance;
           return (
-            <li key={m.id}>
-              <button
-                onClick={() => basculer(m.id)}
-                aria-pressed={on}
-                className={cn(
-                  "flex min-h-14 w-full items-center gap-3 px-4 text-left transition-colors",
-                  on ? "bg-accent-soft" : "active:bg-surface-2",
-                )}
-              >
-                <span
+            <li key={m.id} className={cn("transition-colors", on && "bg-accent-soft")}>
+              <div className="flex items-stretch">
+                <button
+                  onClick={() => basculer(m.id)}
+                  aria-pressed={on}
                   className={cn(
-                    "grid size-7 shrink-0 place-items-center rounded-full border-2 transition-colors",
-                    on ? "border-accent bg-accent text-on-accent" : "border-line",
+                    "flex min-h-14 min-w-0 flex-1 items-center gap-3 pl-4 text-left",
+                    !on && "pr-4 active:bg-surface-2",
                   )}
                 >
-                  {on && <Check size={16} strokeWidth={3} />}
-                </span>
-                <span className={cn("flex-1 text-base", on && "font-medium", m.archive && "text-ink-muted")}>
-                  {m.prenom} {m.nom}
-                </span>
-                <StatutBadge statut={m.statut} />
-              </button>
+                  <span
+                    className={cn(
+                      "grid size-7 shrink-0 place-items-center rounded-full border-2 transition-colors",
+                      on ? "border-accent bg-accent text-on-accent" : "border-line",
+                    )}
+                  >
+                    {on && <Check size={16} strokeWidth={3} />}
+                  </span>
+                  <span className={cn("flex-1 text-base", on && "font-medium", m.archive && "text-ink-muted")}>
+                    {m.prenom} {m.nom}
+                  </span>
+                  <StatutBadge statut={m.statut} />
+                </button>
+                {on && (
+                  <button
+                    onClick={() => setChoixPoids(choixPoids === m.id ? null : m.id)}
+                    aria-expanded={choixPoids === m.id}
+                    aria-label={`Poids de ${m.prenom} : ${poids}`}
+                    className="grid min-w-14 place-items-center px-3"
+                  >
+                    <span
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                        perso === undefined ? "bg-surface-2 text-ink-muted" : "bg-accent text-on-accent",
+                      )}
+                    >
+                      ×{poids}
+                    </span>
+                  </button>
+                )}
+              </div>
+              {on && choixPoids === m.id && (
+                <div className="grid grid-cols-3 gap-1 px-4 pb-3">
+                  {OPTIONS_POIDS.map((o) => (
+                    <button
+                      key={o.valeur}
+                      onClick={() => choisirPoids(m.id, o.valeur)}
+                      aria-pressed={Number(o.valeur) === poids}
+                      className={cn(
+                        "min-h-10 rounded-lg text-sm font-medium tabular-nums",
+                        Number(o.valeur) === poids ? "bg-surface text-ink shadow-sm" : "bg-surface-2 text-ink-muted",
+                      )}
+                    >
+                      ×{o.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </li>
           );
         })}
         {!visibles.length && <li className="px-4 py-8 text-center text-sm text-ink-faint">—</li>}
       </ul>
-
-      {/* Chaque case est enregistrée dès qu'on la touche : « Valider » ne fait
-          que ramener au jour, une fois les derniers enregistrements terminés. */}
-      <div className="sticky bottom-0 -mx-4 bg-page/95 px-4 pt-2 pb-1 backdrop-blur">
-        <Button disabled={enCours} onClick={() => router.push(`/jour/${date}`)} className="w-full">
-          Valider
-        </Button>
-      </div>
     </div>
   );
 }

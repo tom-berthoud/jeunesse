@@ -109,9 +109,11 @@ export type Database = {
           membre_id: string;
           added_by: string;
           added_at: string;
+          poids: number | null;
         };
-        Insert: { seance_id: string; membre_id: string };
-        Update: never;
+        Insert: { seance_id: string; membre_id: string; poids?: number | null };
+        // Seule colonne accordée en UPDATE (migration 0004).
+        Update: { poids?: number | null };
         Relationships: [
           FK<"presences_seance_id_fkey", "seance_id", "seances">,
           FK<"presences_membre_id_fkey", "membre_id", "membres">,

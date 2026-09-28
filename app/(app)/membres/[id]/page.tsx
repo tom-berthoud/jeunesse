@@ -13,19 +13,18 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
     supabase.from("membres").select("id, prenom, nom, statut, archive").eq("id", id).maybeSingle(),
     supabase
       .from("presences")
-      .select("seance:seances(id, date, poids, categorie:categories(id, libelle, couleur))")
+      .select("poids, seance:seances(id, date, poids, categorie:categories(id, libelle, couleur))")
       .eq("membre_id", id),
   ]);
   if (!membre) notFound();
 
+  // Poids de la personne s'il en a un, sinon celui de la séance, comme dans
+  // compteur(). Totaux par catégorie : regroupement des lignes affichées
+  // dessous, rien de recalculé ailleurs.
   const historique = (presences ?? [])
-    .map((p) => p.seance)
-    .filter((s) => s !== null)
+    .flatMap((p) => (p.seance ? [{ ...p.seance, poids: p.poids ?? p.seance.poids }] : []))
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  // Une séance compte pour son poids (journée complète, demi-journée…), comme
-  // dans compteur(). Totaux par catégorie : regroupement des lignes affichées
-  // dessous, rien de recalculé ailleurs.
   const total = historique.reduce((n, s) => n + s.poids, 0);
 
   const totaux = new Map<string, { libelle: string; couleur: string; n: number }>();

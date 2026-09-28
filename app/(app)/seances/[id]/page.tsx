@@ -16,11 +16,12 @@ export default async function Seance({ params }: PageProps<"/seances/[id]">) {
       .eq("id", id)
       .maybeSingle(),
     supabase.from("membres").select("id, prenom, nom, statut, archive").order("prenom").order("nom"),
-    supabase.from("presences").select("membre_id").eq("seance_id", id),
+    supabase.from("presences").select("membre_id, poids").eq("seance_id", id),
   ]);
   if (!seance) notFound();
 
   const presents = (presences ?? []).map((p) => p.membre_id);
+  const poidsPerso = Object.fromEntries((presences ?? []).flatMap((p) => (p.poids === null ? [] : [[p.membre_id, p.poids]])));
   const presentsSet = new Set(presents);
   // Un membre archivé reste visible là où il était présent, sinon l'historique
   // afficherait un compteur sans le nom correspondant.
@@ -44,7 +45,7 @@ export default async function Seance({ params }: PageProps<"/seances/[id]">) {
         }
       />
 
-      <Saisie seanceId={seance.id} date={seance.date} membres={liste} presents={presents} />
+      <Saisie seanceId={seance.id} poidsSeance={seance.poids} membres={liste} presents={presents} poidsPerso={poidsPerso} />
     </div>
   );
 }

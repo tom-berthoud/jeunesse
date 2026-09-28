@@ -121,6 +121,9 @@ create table presences (
   0.5, 1 ou 2 présences. Porté par la séance et non par la présence : tout le
   monde y fait la même journée. Le jour où il faudra distinguer personne par
   personne, la colonne se déplacera sur `presences` sans toucher au reste.
+- **Poids par personne** (`0004_poids_presence.sql`) : `presences.poids`,
+  vide par défaut, remplace celui de la séance pour une personne (arrivée
+  l'après-midi). Choisi au pointage (0.5, 1, 2) via la pastille d'une ligne cochée.
 - **Actif / passif** est le statut du membre dans la société. Un membre parti
   passe `archive = true` : il disparaît de la saisie, ses présences restent.
 - **Catégorie archivée** plutôt que supprimée, pour la même raison.

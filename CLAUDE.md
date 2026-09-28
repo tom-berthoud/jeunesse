@@ -20,7 +20,8 @@ Makefile, tests SQL, sauvegarde GitHub Actions).
   jamais d'édition d'une migration déjà appliquée en production.
 - RLS activée sur **toutes** les tables. Les vues : `with (security_invoker = true)`.
 - Fonctions `security definer` : `set search_path = ''` et `revoke execute … from anon`.
-- `presences` : présent = une ligne, absent = pas de ligne, jamais d'UPDATE.
+- `presences` : présent = une ligne, absent = pas de ligne. Seul UPDATE permis :
+  `poids` (vide = poids de la séance).
   `added_by` / `created_by` valent `auth.uid()` par défaut et la RLS refuse une
   autre valeur : ne pas les passer depuis le code.
 - Création de séance : `on conflict (date, categorie_id) do nothing`, jamais de doublon.

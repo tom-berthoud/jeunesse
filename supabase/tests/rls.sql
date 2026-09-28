@@ -160,6 +160,41 @@ do $$ begin
 end $$;
 reset role;
 
+-- ── 0004 : poids par personne ──────────────────────────────────
+-- État hérité : séance du 2026-10-03 (poids 2) avec Léa et Lucas.
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+do $$ begin
+  assert (select presences from public.compteur('2026-01-01', '2026-12-31') where prenom = 'Lucas') = 2,
+    'sans poids personnel : celui de la séance';
+
+  update public.presences set poids = 1
+  where membre_id = (select id from public.membres where prenom = 'Lucas');
+  assert (select presences from public.compteur('2026-01-01', '2026-12-31') where prenom = 'Lucas') = 1,
+    'poids personnel prioritaire';
+  assert (select presences from public.compteur('2026-01-01', '2026-12-31') where prenom = 'Léa') = 2,
+    'les autres gardent le poids de la séance';
+  assert (select presences from public.compteur('2027-01-01', '2027-12-31') where prenom = 'Lucas') = 0,
+    'poids personnel hors période : non compté';
+
+  begin
+    update public.presences set poids = 1.25;
+    raise exception 'ÉCHEC : poids personnel hors demi accepté';
+  exception when check_violation then null;
+  end;
+  begin
+    update public.presences set added_by = '00000000-0000-0000-0000-00000000000a';
+    raise exception 'ÉCHEC : added_by modifiable';
+  exception when insufficient_privilege then null;
+  end;
+
+  update public.presences set poids = null
+  where membre_id = (select id from public.membres where prenom = 'Lucas');
+  assert (select presences from public.compteur('2026-01-01', '2026-12-31') where prenom = 'Lucas') = 2,
+    'poids vide : retour au poids de la séance';
+end $$;
+reset role;
+
 -- ── comité désactivé : plus rien ───────────────────────────────
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000d';
@@ -170,6 +205,11 @@ do $$ begin
     raise exception 'ÉCHEC : compte désactivé écrit';
   exception when insufficient_privilege then null;
   end;
+end $$;
+do $$ declare n int; begin
+  update public.presences set poids = 1;
+  get diagnostics n = row_count;
+  assert n = 0, 'compte désactivé ne change aucun poids';
 end $$;
 reset role;
 
