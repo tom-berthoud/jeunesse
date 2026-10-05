@@ -39,7 +39,7 @@ production : ce que tu saisis en local est réel.
 | `/` | Calendrier du mois, pastilles par catégorie, liste des séances |
 | `/jour/[date]` | Séances du jour, ouvrir une séance, créer une catégorie |
 | `/seances/[id]` | Saisie : un tap par personne, recherche, filtre présents / absents. Options : remarque, poids |
-| `/membres` | Classement par présences (période, catégorie, statut) |
+| `/membres` | Classement par présences (période, catégorie, statut), export CSV |
 | `/membres/[id]` | Historique d'une personne, modification, archivage |
 | `/membres/nouveau` | Ajout unitaire ou en liste (`Prénom ; Nom ; passif`) |
 | `/reglages` | Nom, mot de passe, déconnexion |

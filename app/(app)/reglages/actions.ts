@@ -36,6 +36,7 @@ export async function changerNom(_prev: EtatAction, formData: FormData): Promise
   const { supabase, userId } = await requireComite();
   const nom = String(formData.get("nom") ?? "").trim();
   if (!nom) return { erreur: "Le nom est obligatoire." };
+  if (nom.length > 60) return { erreur: "60 caractères au maximum." };
 
   const { error } = await supabase.from("profiles").update({ nom }).eq("id", userId);
   if (error) return { erreur: messageErreur(error) };

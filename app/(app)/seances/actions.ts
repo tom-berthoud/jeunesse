@@ -70,6 +70,8 @@ export async function creerCategorieEtSeance(_prev: EtatAction, formData: FormDa
   const couleur = String(formData.get("couleur") ?? "");
   if (!d.success) return { erreur: "Date invalide." };
   if (!libelle) return { erreur: "Donne un nom à la catégorie." };
+  // Même borne que Réglages → Catégories ; le maxLength du champ ne protège pas le serveur.
+  if (libelle.length > 40) return { erreur: "40 caractères au maximum." };
   if (!/^#[0-9a-fA-F]{6}$/.test(couleur)) return { erreur: "Couleur invalide." };
 
   // ilike sans joker : égalité insensible à la casse (« rangement fête » = « Rangement fête »).

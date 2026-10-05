@@ -176,10 +176,10 @@ Barre de navigation en bas, 3 entrées + admin.
 |---|---|
 | `/` | **Calendrier** du mois : chaque jour affiche des pastilles colorées par catégorie. Tap sur une pastille → la séance. Bouton « + » : nouvelle séance (date, aujourd'hui par défaut + catégorie) |
 | `/seances/[id]` | **Saisie** : liste alphabétique des membres actifs, recherche, case à cocher par personne, compteur « 14 présents ». Poids de la séance dans les options |
-| `/membres` | Compteur par personne, filtres catégorie + période — année civile, tout, ou deux dates libres (par défaut : année en cours). Ajout d'une personne |
+| `/membres` | Compteur par personne, filtres catégorie + période — année civile, tout, ou deux dates libres (par défaut : année en cours), export CSV. Ajout d'une personne |
 | `/membres/[id]` | Historique de la personne : liste des séances, total par catégorie |
-| `/admin` | Comptes du comité, catégories (admin seul) |
-| `/login`, `/compte` | Connexion, changement de mot de passe |
+| `/reglages` | Thème, nom, mot de passe, déconnexion. Catégories (tout le comité) ; comptes du comité (admin seul) |
+| `/login` | Connexion |
 
 Saisie : cibles tactiles ≥ 48 px, mise à jour optimiste (`useOptimistic`), et en
 cas d'échec la case revient à son état avec un message. Une case cochée à l'écran
@@ -193,7 +193,7 @@ doit être en base.
 | 1 | Schéma + RLS | ✓ `0001_init.sql`, `seed.sql` (Char, Costume, 16 membres fictifs), `npm run test:db` |
 | 2 | Auth + comptes | ✓ Connexion, mdp provisoire changé à la 1ʳᵉ connexion, admin crée / désactive un compte |
 | 3 | Membres | ✓ Liste, ajout, archivage, ajout en liste `Prénom ; Nom ; passif` |
-| 4 | Séances + saisie | ✓ code. À valider sur téléphone : créer une séance et cocher 30 personnes en < 1 min |
+| 4 | Séances + saisie | ✓ Validé sur téléphone : créer une séance et cocher 30 personnes en < 1 min |
 | 5 | Calendrier + compteur + historique | ✓ Chiffres de `compteur()` vérifiés sur un petit jeu de données compté à la main |
 | 6 | Prod | PWA installable, sauvegarde + réveil GitHub Actions, comptes du comité créés |
 
@@ -206,7 +206,6 @@ PWA générées depuis le logo officiel (`design/logo.png` → `scripts/icones.p
 
 ## 8. Plus tard, si demandé
 
-- Export CSV du compteur.
 - Points par catégorie → classement (une colonne `points` sur `categories`).
 - Hors-ligne, si le local capte mal.
 - Accès lecture seule pour les membres.
