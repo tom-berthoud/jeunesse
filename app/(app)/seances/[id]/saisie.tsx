@@ -23,7 +23,7 @@ const FILTRES = [
 const HORS_LIGNE = "Pas de connexion : le dernier changement n'est pas enregistré.";
 
 /** Relecture de la séance pendant la saisie, pour voir les coches des autres téléphones. */
-const INTERVALLE_MS = 15_000;
+const INTERVALLE_MS = 5_000;
 
 export function Saisie({
   seanceId,
