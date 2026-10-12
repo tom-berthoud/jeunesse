@@ -43,6 +43,16 @@ export function lireFiltres(sp: ParamsClassement) {
   };
 }
 
+/**
+ * Filtres en query string, pour les transmettre tels quels : export CSV, fiche
+ * d'un membre et retour au classement.
+ */
+export function requeteClassement(sp: ParamsClassement) {
+  return new URLSearchParams(
+    Object.entries(sp).filter((e): e is [string, string] => typeof e[1] === "string"),
+  ).toString();
+}
+
 /** Rang « sportif » : ex æquo au même rang, le suivant saute (1, 2, 2, 4). Lignes triées. */
 export function rangs(lignes: { presences: number }[]) {
   return lignes.map((m) => lignes.findIndex((x) => x.presences === m.presences) + 1);

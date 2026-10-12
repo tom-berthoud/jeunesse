@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireComite } from "@/lib/auth";
-import { dateCourte } from "@/lib/dates";
+import { dateCourte, dateNumerique } from "@/lib/dates";
 import { Pencil } from "lucide-react";
 import { IconLink, PageHeader, Pill, PoidsBadge, Section, StatutBadge } from "@/components/ui";
+import { lireFiltres, requeteClassement, type ParamsClassement } from "../filtres-classement";
 
-export default async function Membre({ params }: PageProps<"/membres/[id]">) {
+export default async function Membre({ params, searchParams }: PageProps<"/membres/[id]">) {
   const { id } = await params;
   const { supabase } = await requireComite();
+  // Mêmes filtres que le classement d'où l'on vient (année en cours sinon),
+  // pour que le total de la fiche soit celui de la ligne touchée.
+  const sp = (await searchParams) as ParamsClassement;
+  const { mode, periode, categorie } = lireFiltres(sp);
+  const requete = requeteClassement(sp);
 
   const [{ data: membre }, { data: presences }] = await Promise.all([
     supabase.from("membres").select("id, prenom, nom, statut, archive").eq("id", id).maybeSingle(),
@@ -23,6 +29,10 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
   // dessous, rien de recalculé ailleurs.
   const historique = (presences ?? [])
     .flatMap((p) => (p.seance ? [{ ...p.seance, poids: p.poids ?? p.seance.poids }] : []))
+    .filter(
+      (s) =>
+        s.date >= periode.debut && s.date <= periode.fin && (!categorie || s.categorie?.id === categorie),
+    )
     .sort((a, b) => b.date.localeCompare(a.date));
 
   const total = historique.reduce((n, s) => n + s.poids, 0);
@@ -35,6 +45,11 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
     totaux.set(s.categorie.id, t);
   }
 
+  const libellePeriode =
+    mode === "tout" ? null
+    : mode === "perso" ? `${dateNumerique(periode.debut)} – ${dateNumerique(periode.fin)}`
+    : mode;
+
   // Regroupement par année pour la lecture
   const parAnnee = new Map<string, typeof historique>();
   for (const s of historique) {
@@ -45,7 +60,7 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
   return (
     <div className="space-y-5">
       <PageHeader
-        back="/membres"
+        back={`/membres${requete && `?${requete}`}`}
         title={`${membre.prenom} ${membre.nom}`}
         actions={
           <>
@@ -59,7 +74,10 @@ export default async function Membre({ params }: PageProps<"/membres/[id]">) {
 
       <div className="card flex items-center justify-between px-4 py-3">
         <span className="text-3xl font-semibold tabular-nums">{total}</span>
-        <span className="text-sm text-ink-muted">présence{total > 1 ? "s" : ""}</span>
+        <span className="text-sm text-ink-muted">
+          présence{total > 1 ? "s" : ""}
+          {libellePeriode && ` · ${libellePeriode}`}
+        </span>
       </div>
 
       {totaux.size > 0 && (

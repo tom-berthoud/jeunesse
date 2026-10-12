@@ -2,7 +2,7 @@ import { Download, UserPlus } from "lucide-react";
 import { requireComite } from "@/lib/auth";
 import { IconLink, Input, PageHeader, Select } from "@/components/ui";
 import { Filtres } from "./filtres";
-import { lireFiltres, rangs, type ParamsClassement } from "./filtres-classement";
+import { lireFiltres, rangs, requeteClassement, type ParamsClassement } from "./filtres-classement";
 import { ListeClassement } from "./liste-classement";
 
 export default async function Membres({ searchParams }: PageProps<"/membres">) {
@@ -30,9 +30,7 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
   const annees = [];
   for (let a = Math.max(anneeCourante, premiereAnnee); a >= Math.min(anneeCourante, premiereAnnee); a--) annees.push(a);
 
-  const exportParams = new URLSearchParams(
-    Object.entries(sp).filter((e): e is [string, string] => typeof e[1] === "string"),
-  );
+  const requete = requeteClassement(sp);
 
   return (
     <div className="space-y-4">
@@ -41,7 +39,7 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
         actions={
           <>
             {/* Mêmes filtres que l'écran. `download` : Link laisse le navigateur télécharger. */}
-            <IconLink href={`/membres/export?${exportParams}`} download prefetch={false} aria-label="Exporter en CSV">
+            <IconLink href={`/membres/export?${requete}`} download prefetch={false} aria-label="Exporter en CSV">
               <Download size={22} />
             </IconLink>
             <IconLink href="/membres/nouveau" aria-label="Ajouter des membres">
@@ -82,7 +80,7 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
         </label>
       </Filtres>
 
-      <ListeClassement lignes={lignes} rangs={rangs(lignes)} />
+      <ListeClassement lignes={lignes} rangs={rangs(lignes)} requete={requete} />
     </div>
   );
 }

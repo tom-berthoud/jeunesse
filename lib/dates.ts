@@ -102,6 +102,8 @@ export const dateLongue = (date: string) => initiale(fmtLong.format(versDate(dat
 export const dateCourte = (date: string) => initiale(fmtCourt.format(versDate(date)));
 /** « Octobre 2026 » */
 export const nomMois = (m: Mois) => initiale(fmtMois.format(new Date(Date.UTC(m.annee, m.mois - 1, 1))));
+/** « 3.10.2026 » */
+export const dateNumerique = (date: string) => date.split("-").map(Number).reverse().join(".");
 export const jourDuMois = (date: string) => Number(date.slice(8));
 
 export function decalerJour(date: string, delta: number): string {

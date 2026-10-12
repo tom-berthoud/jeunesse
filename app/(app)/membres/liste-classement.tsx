@@ -9,8 +9,11 @@ import type { StatutMembre } from "@/lib/types/database";
 
 type Ligne = { membre_id: string; prenom: string; nom: string; statut: StatutMembre; archive: boolean; presences: number };
 
-/** Classement avec recherche locale. Le rang reste celui du classement complet. */
-export function ListeClassement({ lignes, rangs }: { lignes: Ligne[]; rangs: number[] }) {
+/**
+ * Classement avec recherche locale. Le rang reste celui du classement complet.
+ * `requete` : filtres transmis à la fiche, pour qu'elle compte sur la même période.
+ */
+export function ListeClassement({ lignes, rangs, requete }: { lignes: Ligne[]; rangs: number[]; requete: string }) {
   const [recherche, setRecherche] = useState("");
 
   const visibles = useMemo(() => {
@@ -39,7 +42,7 @@ export function ListeClassement({ lignes, rangs }: { lignes: Ligne[]; rangs: num
       <ol className="card divide-y divide-line overflow-hidden">
         {visibles.map((m) => (
           <li key={m.membre_id}>
-            <Link href={`/membres/${m.membre_id}`} className="flex min-h-13 items-center gap-3 px-4 py-2 hover:bg-surface-2">
+            <Link href={`/membres/${m.membre_id}${requete && `?${requete}`}`} className="flex min-h-13 items-center gap-3 px-4 py-2 hover:bg-surface-2">
               <span
                 className={cn(
                   "grid size-7 shrink-0 place-items-center rounded-full text-xs font-semibold tabular-nums",
