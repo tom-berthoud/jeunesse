@@ -1,17 +1,45 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { Check, Copy } from "lucide-react";
 import { changerActivation, changerRole, creerCompte, reinitialiserMotDePasse } from "./actions";
 import { ETAT_INITIAL, type EtatAction } from "@/lib/action";
 import { Alert, Button, cn, Field, Input, Repli } from "@/components/ui";
 import type { Tables } from "@/lib/types/database";
+
+/** Mot de passe en grand, copiable d'un geste (la sélection au doigt est pénible). */
+function MotDePasse({ valeur }: { valeur: string }) {
+  const [copie, setCopie] = useState(false);
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      <span className="min-w-0 flex-1 font-mono text-lg font-semibold break-all text-ink select-all">{valeur}</span>
+      <button
+        type="button"
+        aria-label="Copier le mot de passe"
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(valeur);
+            setCopie(true);
+          } catch {
+            // Presse-papiers refusé : le texte reste sélectionnable.
+          }
+        }}
+        className="grid size-11 shrink-0 place-items-center rounded-lg text-ink-muted hover:bg-surface-2 hover:text-ink"
+      >
+        {copie ? <Check size={20} /> : <Copy size={20} />}
+      </button>
+    </div>
+  );
+}
 
 function Retour({ etat }: { etat: EtatAction }) {
   if (etat.erreur) return <Alert>{etat.erreur}</Alert>;
   if (etat.ok)
     return (
       <Alert tone="success">
-        <span className="select-all">{etat.ok}</span>
+        {etat.ok}
+        {/* key : l'icône « copié » repart à zéro pour un nouveau mot de passe. */}
+        {etat.mdp && <MotDePasse key={etat.mdp} valeur={etat.mdp} />}
       </Alert>
     );
   return null;
@@ -118,11 +146,7 @@ export function NouveauCompte({ mdpSuggere }: { mdpSuggere: string }) {
           Créer le compte
         </Button>
       </form>
-      {etat.ok && (
-        <Alert tone="success">
-          <span className="select-all">{etat.ok}</span>
-        </Alert>
-      )}
+      <Retour etat={{ ok: etat.ok, mdp: etat.mdp }} />
     </div>
   );
 }

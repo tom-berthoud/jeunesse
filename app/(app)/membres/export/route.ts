@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { requireComite } from "@/lib/auth";
-import { lireFiltres, rangs, type ParamsClassement } from "../filtres-classement";
+import { filtrer, lireFiltres, rangs, type ParamsClassement } from "../filtres-classement";
 
 /**
  * Champ CSV : entre guillemets si besoin (`;`, guillemet, retour à la ligne).
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   });
   if (error) return new Response(error.message, { status: 500 });
 
-  const lignes = (data ?? []).filter((m) => (f.archives || !m.archive) && (!f.statut || m.statut === f.statut));
+  const lignes = filtrer(data ?? [], f);
   const r = rangs(lignes);
 
   const csv = [

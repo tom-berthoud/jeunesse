@@ -1,8 +1,9 @@
-import { Download, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { requireComite } from "@/lib/auth";
 import { IconLink, Input, PageHeader, Select } from "@/components/ui";
+import { ExportCsv } from "./export-csv";
 import { Filtres } from "./filtres";
-import { lireFiltres, rangs, requeteClassement, type ParamsClassement } from "./filtres-classement";
+import { filtrer, lireFiltres, rangs, requeteClassement, type ParamsClassement } from "./filtres-classement";
 import { ListeClassement } from "./liste-classement";
 
 export default async function Membres({ searchParams }: PageProps<"/membres">) {
@@ -24,7 +25,7 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
   });
   if (error) throw new Error(error.message);
 
-  const lignes = (compteur ?? []).filter((m) => (archives || !m.archive) && (!statut || m.statut === statut));
+  const lignes = filtrer(compteur ?? [], { statut, archives });
 
   const premiereAnnee = premiere ? Number(premiere.date.slice(0, 4)) : anneeCourante;
   const annees = [];
@@ -38,10 +39,8 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
         title="Membres"
         actions={
           <>
-            {/* Mêmes filtres que l'écran. `download` : Link laisse le navigateur télécharger. */}
-            <IconLink href={`/membres/export?${requete}`} download prefetch={false} aria-label="Exporter en CSV">
-              <Download size={22} />
-            </IconLink>
+            {/* Mêmes filtres que l'écran. */}
+            <ExportCsv href={`/membres/export?${requete}`} />
             <IconLink href="/membres/nouveau" aria-label="Ajouter des membres">
               <UserPlus size={22} />
             </IconLink>
@@ -67,6 +66,7 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
           <option value="">Actifs et passifs</option>
           <option value="actif">Actifs</option>
           <option value="passif">Passifs</option>
+          <option value="anciens">Anciens membres</option>
         </Select>
         {mode === "perso" && (
           <div className="col-span-3 flex items-center gap-2">
@@ -75,7 +75,15 @@ export default async function Membres({ searchParams }: PageProps<"/membres">) {
           </div>
         )}
         <label className="col-span-3 flex min-h-9 items-center gap-2 px-1 text-sm text-ink-muted">
-          <input type="checkbox" name="archives" value="1" defaultChecked={archives} className="size-4 accent-primary" />
+          {/* key : la case non contrôlée repart du serveur quand « Anciens membres » la force. */}
+          <input
+            key={statut}
+            type="checkbox"
+            name="archives"
+            value="1"
+            defaultChecked={archives}
+            className="size-4 accent-primary"
+          />
           Anciens membres
         </label>
       </Filtres>

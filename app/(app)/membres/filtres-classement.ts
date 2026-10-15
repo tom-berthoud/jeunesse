@@ -38,9 +38,20 @@ export function lireFiltres(sp: ParamsClassement) {
     fin,
     periode,
     categorie: z.uuid().safeParse(sp.categorie).success ? sp.categorie! : "",
-    statut: sp.statut === "actif" || sp.statut === "passif" ? sp.statut : "",
-    archives: sp.archives === "1",
+    statut: sp.statut === "actif" || sp.statut === "passif" || sp.statut === "anciens" ? sp.statut : "",
+    // « Anciens » n'a de sens qu'avec les membres archivés.
+    archives: sp.archives === "1" || sp.statut === "anciens",
   };
+}
+
+/** Lignes du compteur retenues par les filtres : même règle à l'écran et dans le CSV. */
+export function filtrer<T extends { archive: boolean; statut: string }>(
+  lignes: T[],
+  f: { statut: string; archives: boolean },
+) {
+  return lignes.filter((m) =>
+    f.statut === "anciens" ? m.archive : (f.archives || !m.archive) && (!f.statut || m.statut === f.statut),
+  );
 }
 
 /**

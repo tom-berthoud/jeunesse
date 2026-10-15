@@ -38,7 +38,7 @@ export async function creerCompte(_prev: EtatAction, formData: FormData): Promis
   }
 
   revalidatePath("/reglages/comite");
-  return { ok: `Compte créé. À transmettre à ${nom} : ${email} / ${password}` };
+  return { ok: `Compte créé. À transmettre à ${nom} : ${email}`, mdp: password };
 }
 
 const cible = z.object({ id: z.uuid() });
@@ -97,6 +97,7 @@ export async function reinitialiserMotDePasse(_prev: EtatAction, formData: FormD
     return { erreur: "La réinitialisation a échoué." };
   }
   await admin.from("profiles").update({ doit_changer_mdp: true }).eq("id", c.id);
-  revalidatePath("/reglages/comite");
-  return { ok: `Nouveau mot de passe provisoire : ${password}` };
+  // Pas de revalidatePath : rien d'affiché ne change, et le rendu tirerait une
+  // nouvelle suggestion dans le champ à la place du mot de passe enregistré.
+  return { ok: "Nouveau mot de passe provisoire :", mdp: password };
 }

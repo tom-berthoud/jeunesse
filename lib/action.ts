@@ -1,5 +1,10 @@
 /** Retour des Server Actions de formulaire (useActionState). */
-export type EtatAction = { erreur?: string; ok?: string };
+export type EtatAction = {
+  erreur?: string;
+  ok?: string;
+  /** Mot de passe provisoire à transmettre, affiché à part pour pouvoir le copier. */
+  mdp?: string;
+};
 
 export const ETAT_INITIAL: EtatAction = {};
 
