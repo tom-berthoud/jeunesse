@@ -7,6 +7,16 @@ costume…), on coche les présents. Compteur par personne, calendrier, historiq
 membres, les comptes du comité et l'essai sur téléphone. Voir
 [`PLAN.md`](PLAN.md).
 
+<p>
+  <img src="docs/guide/captures/calendrier.png" alt="Calendrier du mois" width="24%">
+  <img src="docs/guide/captures/saisie.png" alt="Saisie des présences d'une séance" width="24%">
+  <img src="docs/guide/captures/membres.png" alt="Classement des membres" width="24%">
+  <img src="docs/guide/captures/fiche.png" alt="Fiche d'un membre" width="24%">
+</p>
+
+Calendrier, saisie d'une séance, classement, fiche membre. Données de
+démonstration ; autres captures dans [`docs/guide/captures/`](docs/guide/captures/).
+
 ## Démarrer
 
 ```bash
