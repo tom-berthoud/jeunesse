@@ -5,7 +5,7 @@
 Référence : `PLAN.md`. Projets frères à réutiliser plutôt que réinventer :
 `../edelparc` (Supabase Auth, RLS, PWA, bottom nav) et `../genoudb` (style du code,
 Makefile, tests SQL, sauvegarde GitHub Actions).
-
+ 
 ## Next.js 16
 
 - Lire `node_modules/next/dist/docs/` avant d'utiliser une API : elle diffère
